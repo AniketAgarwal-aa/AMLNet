@@ -6,10 +6,10 @@ from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from sqlalchemy import or_, desc
 from .database import get_db, SessionLocal
-from .models import Account, Transaction, Alert, TrainingRun, ModelArtifact
+from .models import Account, Transaction, Alert, Prediction, TrainingRun, ModelArtifact
 from .services.initialize import initialize, risk_level
 from .services.graph import build_graph_features
-from .ml.train import train_models
+from .ml.train import train_models, predict_with_artifact
 from .config import CORS_ORIGINS, ADMIN_API_KEY, APP_ENV
 from .detection.engine import detect_patterns, rule_scores
 
@@ -103,4 +103,12 @@ def train(db:Session=Depends(get_db), _: None=Depends(require_admin)):
 def predict(db:Session=Depends(get_db), _: None=Depends(require_admin)):
     artifact=db.query(ModelArtifact).filter(ModelArtifact.status=='active').order_by(desc(ModelArtifact.id)).first()
     if not artifact: raise HTTPException(503,'No persisted model artifact is available')
-    return {'updated_accounts':db.query(Account).count(),'model_version':artifact.version,'message':'Persisted GNN predictions are available for every account.'}
+    accounts=db.query(Account).order_by(Account.id).all(); tx=db.query(Transaction).all()
+    account_frame=pd.DataFrame([{'id':a.id,'label':a.label} for a in accounts]); tx_frame=pd.DataFrame([tx_out(t) for t in tx])
+    probabilities,_=predict_with_artifact(account_frame,tx_frame,artifact.model_blob,artifact.scaler_blob)
+    alerts=detect_patterns(tx_frame); rules=rule_scores(alerts)
+    for i, account in enumerate(accounts):
+        account.gnn_probability=float(probabilities[i]); account.rule_score=rules.get(account.id,0); account.final_risk=100*(.7*account.gnn_probability+.3*account.rule_score/100); account.risk_level=risk_level(account.final_risk)
+        db.add(Prediction(account_id=account.id,probability=account.gnn_probability,final_risk=account.final_risk))
+    db.commit()
+    return {'updated_accounts':len(accounts),'model_version':artifact.version,'message':'Predictions were regenerated from the persisted GNN and scaler.'}

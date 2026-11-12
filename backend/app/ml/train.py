@@ -57,3 +57,14 @@ def train_models(accounts, transactions, epochs=160):
 
 def load_metrics():
     path=ARTIFACT_DIR/'metrics.json'; return json.loads(path.read_text()) if path.exists() else None
+
+def predict_with_artifact(accounts, transactions, model_blob, scaler_blob):
+    """CPU inference from a database-backed checkpoint; no filesystem artifact is needed."""
+    _, raw, _, _ = build_graph_features(accounts, transactions)
+    scaler=pickle.loads(scaler_blob)
+    x=torch.tensor(scaler.transform(raw), dtype=torch.float32)
+    edges=torch.tensor(edge_index(accounts, transactions), dtype=torch.long)
+    checkpoint=torch.load(io.BytesIO(model_blob), map_location='cpu', weights_only=True)
+    model=AMLGCN(checkpoint['input_dim'])
+    model.load_state_dict(checkpoint['state_dict']); model.eval()
+    with torch.no_grad(): return torch.softmax(model(x, edges), dim=1)[:,1].numpy(), raw
