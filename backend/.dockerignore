@@ -10,4 +10,8 @@ artifacts/
 *.db
 *.sqlite
 *.sqlite3
+data/*.csv
+data/*.json
+research_data/
+research/
 .DS_Store

@@ -65,7 +65,7 @@ def graph(risk_level:str|None=None,limit:int=500,db:Session=Depends(get_db)):
     q=db.query(Account)
     if risk_level:q=q.filter(Account.risk_level==risk_level)
     nodes=q.all(); ids={a.id for a in nodes}; tx=[t for t in db.query(Transaction).limit(limit).all() if t.source_id in ids and t.target_id in ids]
-    return {'nodes':[{'data':{'id':a.id,'label':a.id,'risk':a.final_risk,'risk_level':a.risk_level}} for a in nodes],'edges':[{'data':{'id':t.id,'source':t.source_id,'target':t.target_id,'amount':t.amount}} for t in tx]}
+    return {'nodes':[{'data':{'id':a.id,'label':a.id,'risk':a.final_risk,'risk_level':a.risk_level}} for a in nodes],'edges':[{'data':{'id':t.id,'source':t.source_id,'target':t.target_id,'amount':t.amount,'timestamp':t.timestamp,'transaction_type':t.transaction_type,'scenario':t.scenario}} for t in tx]}
 def alert_out(a): return {'id':a.id,'account_ids':a.account_ids,'transaction_ids':a.transaction_ids,'pattern_type':a.pattern_type,'amount':a.amount,'timestamp':a.timestamp,'risk_level':a.risk_level,'explanation':a.explanation}
 @app.get('/api/alerts')
 def alerts(pattern_type:str|None=None,db:Session=Depends(get_db)):

@@ -2,6 +2,7 @@ services:
   - type: web
     name: amlnet-api
     runtime: docker
+    plan: free
     rootDir: backend
     healthCheckPath: /api/health
     autoDeployTrigger: commit

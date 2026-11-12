@@ -24,3 +24,8 @@ backend/artifacts/*
 neon/.env*
 .DS_Store
 .neon
+# IBM AMLSim raw/research data is intentionally kept outside Git.
+10Kvertices-1Medges/
+1Kvertices-100Kedges/
+research_data/
+backend/research_data/

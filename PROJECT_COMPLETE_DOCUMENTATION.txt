@@ -1,0 +1,348 @@
+AMLNet — PROJECT COMPLETE DOCUMENTATION
+========================================
+Generated: 2026-11-12
+Repository: /Users/manojagarwal/CODE/Biometrics
+GitHub: https://github.com/AniketAgarwal-aa/AMLNet
+
+This document is an evidence-based audit of the current local AMLNet working tree.
+It distinguishes implementation, verification, research-only results, production
+state, and recommendations. It does not contain credentials.
+
+STATUS LEGEND
+-------------
+[IMPLEMENTED AND VERIFIED] Code exists and was exercised successfully.
+[IMPLEMENTED BUT NOT VERIFIED] Code exists but the required verification was not run.
+[PARTIALLY IMPLEMENTED] Some of the requested behavior exists, with known gaps.
+[NOT IMPLEMENTED] No implementation was found.
+[PLANNED] Explicit future work.
+[RECOMMENDED] Suggested improvement, not current behavior.
+[UNKNOWN] Evidence was unavailable.
+[NOT APPLICABLE] Not relevant to this synthetic AML research application.
+
+1. EXECUTIVE SUMMARY
+--------------------
+AMLNet is a synthetic-data AML research and investigation prototype. It models
+accounts as graph nodes and transfers as directed edges, computes account-level
+features, produces GNN and rule-based risk signals, detects transaction patterns,
+and exposes the results through a FastAPI API and React/Vite interface.
+
+Primary domain: financial crime analytics / AML.
+Supporting domains: graph analytics, graph machine learning, data engineering,
+full-stack software engineering, database engineering, cloud deployment, security,
+and reproducible research.
+
+Maturity: functional research/demo prototype, not a bank-production AML system.
+The application uses synthetic AMLNet data. IBM AMLSim is an optional local
+research input and is never automatically imported into production.
+
+2. SCOPE, USERS AND OBJECTIVES
+------------------------------
+Users are analysts, developers, students, and researchers investigating synthetic
+account activity. The system is intended for learning, demonstration, and model
+comparison. It is not a criminal-conduct determination, regulatory decision,
+customer-risk adjudication, or production compliance certification.
+
+Objectives implemented:
+- Explore account and transaction relationships.
+- Compute explainable graph/account features.
+- Classify suspicious accounts with a small GCN and Logistic Regression baseline.
+- Combine GNN probabilities with rule evidence into a 0–100 investigation score.
+- Detect cycles, rapid transfers, fan-in, and fan-out patterns.
+- Persist data and model artifacts using SQLAlchemy.
+- Provide dashboard, investigation, graph, alert, performance, and management views.
+- Preserve a reproducible IBM AMLSim research pipeline outside production.
+
+3. REQUIREMENT TRACEABILITY (SELECTED)
+---------------------------------------
+Requirement | Implementation | Evidence | Status
+Synthetic seeded data | backend/app/services/initialize.py | backend/tests/test_core.py | [IMPLEMENTED AND VERIFIED]
+Directed transaction graph | backend/app/services/graph.py | backend/tests/test_core.py | [IMPLEMENTED AND VERIFIED]
+GCN inference | backend/app/ml/train.py | API smoke/model artifact checks | [IMPLEMENTED AND VERIFIED]
+Rule alerts | backend/detection/engine.py | backend/tests/test_core.py | [IMPLEMENTED AND VERIFIED]
+SQLite/PostgreSQL split | backend/app/config.py, database.py | Neon read-only verification | [IMPLEMENTED AND VERIFIED]
+Alembic schema | backend/alembic/ | production revision 0001_initial | [IMPLEMENTED AND VERIFIED]
+React investigation UI | frontend/src/main.jsx | Vite build/browser checks | [IMPLEMENTED AND VERIFIED]
+IBM AMLSim ingestion | backend/research/ibm_ingest.py | backend/tests/test_research.py | [IMPLEMENTED AND VERIFIED]
+Research comparison | backend/research/experiment.py | 10K comparison run | [IMPLEMENTED AND VERIFIED]
+Public deployment | Render/Vercel URLs exist in deployment context | no redeploy in this task | [IMPLEMENTED BUT NOT VERIFIED]
+
+4. ARCHITECTURE
+---------------
+```text
+React/Vite + Recharts + Cytoscape
+             │ JSON REST / VITE_API_BASE_URL
+FastAPI + SQLAlchemy + validation + CORS
+             │
+SQLite (local) / Neon PostgreSQL (production)
+             │
+NetworkX directed graph → account features → StandardScaler
+             │                         └→ rule pattern engine
+             └→ PyTorch Geometric GCN → probabilities
+                              └→ weighted final risk → alerts/API/UI
+```
+
+The original directed graph is retained for financial-pattern detection. The
+standard GCN receives a symmetrized edge_index for message passing; this does not
+erase sender/receiver direction from transactions or the rule engine.
+
+Deployment architecture is GitHub source, Render FastAPI/Docker, Vercel React,
+and Neon PostgreSQL. Production credentials are private environment variables.
+
+5. REPOSITORY STRUCTURE AND IMPORTANT FILES
+--------------------------------------------
+backend/app/main.py                 FastAPI application and routes.
+backend/app/config.py               Environment/database/CORS configuration.
+backend/app/database.py             SQLAlchemy engine, sessions and Base.
+backend/app/models.py               Account, Transaction, Prediction, Alert,
+                                    TrainingRun and ModelArtifact tables.
+backend/app/services/initialize.py  Idempotent synthetic initialization.
+backend/app/services/graph.py       Feature construction and edge index.
+backend/app/detection/engine.py     Cycles, rapid transfers, fan-in/fan-out.
+backend/app/ml/train.py             GCN, Logistic Regression, metrics, artifacts.
+backend/alembic/                    Migration environment and revisions.
+backend/research/ibm_ingest.py      Chunked AMLSim inspection/subsetting.
+backend/research/experiment.py      Fair research model comparison.
+backend/tests/test_core.py          API, data, graph, rules and model smoke tests.
+backend/tests/test_research.py      AMLSim schema/seed/subset test.
+frontend/src/main.jsx               Routes, pages, fetching and interactions.
+frontend/src/api.js                 Central API client and production URL handling.
+frontend/src/style.css              Dark responsive financial-intelligence UI.
+frontend/vercel.json                SPA fallback.
+backend/Dockerfile                  Backend container.
+render.yaml                         Render service configuration.
+.github/workflows/ci.yml            Backend test and frontend build CI.
+README.md                            Concise project documentation.
+DEPLOYMENT.md                        Deployment operations.
+SECURITY.md                          Secret and vulnerability handling.
+
+Raw AMLSim directories, local database files, node_modules, dist, caches, virtual
+environments, and generated research outputs are ignored and are not tracked.
+
+6. FRONTEND
+-----------
+[IMPLEMENTED AND VERIFIED] React Router exposes Dashboard, Accounts, Transactions,
+Graph Explorer, Suspicious Activity, Model Performance, and Model Management.
+Pages use the shared useResource(path) lifecycle for loading, success, error, and
+retry states. Dashboard values come from /api/dashboard. Tables and panels use
+real backend responses.
+
+Currency display uses one INR formatter:
+Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' })
+This is presentation only; no exchange-rate conversion is performed. The values
+are synthetic demonstration amounts.
+
+Account investigation supports account search, risk/GNN/rule values, feature chips,
+transaction history, and transaction details. Transaction Explorer supports search
+and click-to-detail. Model pages load on first navigation. Graph Explorer displays
+up to 250 real edges, has risk filtering, account highlighting, a legend, directed
+arrows, amount-based widths, node selection, edge selection, and transaction detail.
+
+Browser verification performed locally:
+- Dashboard first load: successful; real counts and INR values rendered.
+- Model Performance first navigation: successful.
+- Model Management first navigation: successful.
+- Transaction Explorer first navigation and row selection: successful.
+- Graph Explorer first navigation and risk controls: successful.
+- Browser console error scan during tested flows: no errors observed.
+
+Direct URL/back-forward/mobile viewport coverage was not exhaustively automated;
+mark those scenarios [IMPLEMENTED BUT NOT VERIFIED].
+
+7. BACKEND AND API
+------------------
+GET /api/health                         health and environment.
+GET /api/dashboard                      KPIs, risk distribution, recent alerts.
+GET /api/accounts                       search, risk filtering and pagination.
+GET /api/accounts/{id}                  account risk/features.
+GET /api/accounts/{id}/transactions     account transaction history.
+GET /api/transactions                   account/amount/date filtering and paging.
+GET /api/graph                          nodes, directed edges, risk filtering/limit.
+GET /api/alerts                         alert list and pattern filtering.
+GET /api/model/metrics                  persisted model evaluation metrics.
+GET /api/model/status                   training and active model status.
+POST /api/model/train                   admin-protected asynchronous retraining.
+POST /api/model/predict                 admin-protected artifact-based inference.
+
+Administrative routes require X-Admin-Key. CORS is configured from environment.
+API responses distinguish account labels, predictions, rule scores, final risk, and
+alert evidence. The graph endpoint now includes transaction type, scenario, and
+timestamp for edge investigation.
+
+8. DATABASE AND DATA DICTIONARY
+-------------------------------
+accounts: id (PK), account_type, label, gnn_probability, rule_score, final_risk,
+risk_level, features JSON.
+transactions: id (PK), source_id and target_id (FK accounts.id), amount, timestamp,
+transaction_type, scenario.
+predictions: id, account_id (FK), probability, final_risk, created_at.
+alerts: id (PK), account_ids JSON, transaction_ids JSON, pattern_type, amount,
+timestamp, risk_level, explanation.
+training_runs: id, status, start/completion timestamps, metrics JSON, error.
+model_artifacts: id, unique version, status, model_blob, scaler_blob, metrics JSON,
+configuration JSON, created_at.
+
+Local development uses SQLite. Production uses PostgreSQL through DATABASE_URL and
+must not silently fall back to SQLite. Alembic migration head previously verified
+in Neon is 0001_initial. The Neon production database was checked read-only; no
+write, migration, seed, retraining, or model replacement occurred in this task.
+
+9. DATASETS AND LINEAGE
+-----------------------
+AMLNet synthetic data is generated deterministically with seed 42: approximately
+100 accounts (80 normal, 20 planted suspicious scenarios) and 500 transactions.
+
+IBM AMLSim source directories inspected locally:
+1Kvertices-100Kedges: 1,000 accounts, 117,533 transactions, 175 fraud transactions,
+175 alerts.
+10Kvertices-1Medges: 10,000 accounts, 1,323,234 transactions, 1,719 fraud
+transactions, 1,719 alerts.
+
+Lineage:
+AMLSim CSV → chunked selected-column ingestion → fraud-preserving normal sampling
+(seed 42) → bounded research subset → graph/features → research models → metrics.
+
+ibm_ingest.py preserves source IS_FRAUD as ground truth but does not use it,
+ALERT_ID, or ALERT_TYPE as predictive features. It records schema and sampling
+metadata outside Git. Raw source files are not modified or redistributed.
+
+10. AML DOMAIN AND ALERT LOGIC
+------------------------------
+Cycles may indicate circular movement of funds; rapid transfers may indicate short
+holding periods; fan-in indicates concentration from multiple counterparties; and
+fan-out indicates distribution to multiple counterparties. These are investigation
+signals, not proof of money laundering. Human review and additional context are
+required in any real deployment.
+
+11. MACHINE LEARNING
+--------------------
+Production GCN: two GCNConv layers (32 and 16), ReLU, dropout, linear two-class
+output. A Logistic Regression baseline is also persisted/evaluated. StandardScaler
+preprocessing and database-stored model/scaler blobs support restart-safe inference.
+
+Production demonstration metrics (held-out synthetic accounts):
+GCN accuracy 0.80, precision 0, recall 0, F1 0, confusion [[16,0],[4,0]].
+Logistic Regression metrics were 1.00 on that small split. These limitations are
+documented rather than hidden.
+
+Research comparison (same 10K AMLSim account split; 6,000/2,000/2,000; validation
+F1 threshold; untouched test labels):
+Model                 Accuracy Precision Recall F1     PR-AUC ROC-AUC
+Logistic Regression   0.7830   0.3939    0.5341 0.4534 0.4302 0.7702
+Random Forest         0.8795   0.6263    0.7062 0.6639 0.7499 0.9143
+Existing GCN          0.7730   0.3855    0.5846 0.4646 0.4502 0.8053
+Improved GCN          0.7695   0.3821    0.5964 0.4658 0.4487 0.8005
+GraphSAGE             0.8285   0.4920    0.5490 0.5189 0.5310 0.8333
+
+Random Forest is the strongest research comparator on this split. No research
+model was promoted to production. Results are synthetic-data evidence only and do
+not establish real-bank generalization.
+
+12. SECURITY AND PRIVACY
+------------------------
+The repository is synthetic-data-only. .gitignore and backend/.dockerignore exclude
+environment files, databases, raw AMLSim directories, research outputs, caches,
+node_modules, dist, and virtual environments. Environment examples contain only
+placeholders. DATABASE_URL, ADMIN_API_KEY, CORS_ORIGINS, and hosting credentials
+must remain private. Administrative model actions are key-protected.
+
+Threats include leaked credentials, unauthorized retraining, SQL/API abuse, CORS
+misconfiguration, dependency vulnerabilities, misleading scores, and dataset
+leakage. Existing controls include environment secrets, SQLAlchemy parameterization,
+FastAPI's typed query/header validation, CORS configuration, admin-key comparison,
+and explicit synthetic-data labeling. Rate limiting, centralized audit logging, SSO, rotation,
+and enterprise identity controls remain [RECOMMENDED].
+
+13. TESTING AND EVIDENCE
+------------------------
+Command: env PYTHONPATH=. pytest -q backend/tests
+Result: 4 passed, 2 FastAPI deprecation warnings.
+
+Command: npm run build --prefix frontend
+Result: successful Vite production build. A non-fatal chunk-size warning remains.
+
+Command: python -m compileall -q backend/app backend/research backend/tests
+Result: successful.
+
+Command: git diff --check
+Result: successful.
+
+Browser checks: dashboard, performance, management, transactions, transaction
+selection, graph loading and console error scan were performed locally.
+Responsive full-matrix, browser back/forward, and direct-refresh checks are not
+fully automated and remain [IMPLEMENTED BUT NOT VERIFIED].
+
+14. PERFORMANCE, RELIABILITY AND OPERATIONS
+--------------------------------------------
+The research pipeline reads large CSVs in chunks and bounds normal-row candidates.
+An attempted macOS RSS measurement was blocked by sandbox sysctl permissions, so no
+memory number is claimed. Graph rendering is capped at 250 edges for usability.
+
+Startup initializes the database idempotently. Model training uses a process-local
+lock to prevent duplicate jobs. Model artifacts are stored in the database rather
+than depending on ephemeral Render storage. Health is exposed at /api/health.
+
+Operational runbook: inspect /api/health, /api/model/status, logs, database
+connectivity, Alembic revision, and artifact status. Never repair production with
+blind reseeding or reset commands. Take a database backup and obtain approval for
+production changes.
+
+15. DEPLOYMENT AND RELEASE STATE
+--------------------------------
+Deployment configuration exists for GitHub, Render, Vercel, and Neon in
+DEPLOYMENT.md, render.yaml, backend/Dockerfile, frontend/vercel.json, and CI.
+Production URLs were supplied in project context, but no redeployment was performed
+for this audit. No Git commit or push was performed.
+
+Verified production facts from previous read-only checks: Neon PostgreSQL 18.7,
+database amlnet_db, production branch, Alembic 0001_initial, persisted model blob,
+and existing AMLNet records. Credentials are intentionally omitted.
+
+16. CODE QUALITY AND TECHNICAL DEBT
+-----------------------------------
+Known debt:
+- FastAPI on_event startup API emits a deprecation warning.
+- Frontend bundle exceeds Vite's 500 kB advisory threshold.
+- Automated frontend unit/component tests are not configured.
+- Full browser route matrix and responsive testing should be automated.
+- Production GCN performance is weak on the small demo split.
+- Research scaler fitting is suitable for the bounded experiment but should be
+  reviewed for strict train-only fitting in future experimental revisions.
+- API schemas are plain dictionaries rather than shared generated contracts.
+
+17. MATURITY AND LIMITATIONS
+----------------------------
+Classification: functional research/demo prototype. It is not production-ready or
+enterprise-ready AML software. Limitations include synthetic data, small scale,
+limited temporal modeling, no real customer validation, no calibration study, no
+formal regulatory validation, no human-analyst feedback loop, bounded graph view,
+and limited automated UI testing.
+
+18. FUTURE ROADMAP
+------------------
+Quick wins: add frontend component tests, route matrix automation, graph fit/reset
+controls, richer alert detail navigation, and replace deprecated startup hooks.
+Medium term: strict temporal validation, train-only scaler fitting, calibration,
+temporal GNNs, stronger audit logging, rate limiting, and model monitoring.
+Research: heterogeneous/temporal graph models, transaction-level prediction,
+concept-drift evaluation, fairness analysis, and larger reproducible benchmarks.
+Enterprise: identity provider integration, approval workflows, case management,
+immutable audit trails, backups/restore drills, and regulatory model governance.
+
+19. AI-TO-AI HANDOVER
+---------------------
+Start by reading README.md, DEPLOYMENT.md, SECURITY.md, backend/app/main.py,
+backend/app/models.py, backend/app/services/graph.py, backend/detection/engine.py,
+backend/ml/train.py, frontend/src/main.jsx, and this file. Run backend tests and
+frontend build before editing. Preserve the current uncommitted changes. Do not
+push, deploy, write Neon, retrain production, or overwrite artifacts without
+explicit approval.
+
+20. FINAL SAFETY STATE
+----------------------
+GitHub push: NOT PERFORMED.
+Git commit: NOT PERFORMED.
+Render redeployment: NOT PERFORMED.
+Vercel redeployment: NOT PERFORMED.
+Neon production writes/migrations/retraining/model replacement: NOT PERFORMED.
+Secrets exposed: NONE.
+Raw research data staged: NO.
