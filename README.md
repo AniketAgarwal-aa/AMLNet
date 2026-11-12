@@ -129,10 +129,6 @@ cd frontend && npm run build
 
 The CI workflow runs Python compilation/tests and the Vite production build. No real banking customer information is used. No application screenshots are committed; screenshots should only be added after a real deployment is captured and reviewed for secrets.
 
-## Limitations and future work
-
-The demonstration dataset is small and synthetic, so metrics are not representative of a bank’s production population. AMLSim experiments are currently local-only, and the graph model is intentionally simple. Future work includes temporal graph models, better calibrated probabilities, time-aware validation, larger reproducible experiments, analyst feedback loops, and independent bias/privacy review.
-
 ## Acknowledgements
 
-AMLNet uses [IBM AMLSim](https://github.com/IBM/AMLSim) as an optional research dataset. Its original files remain outside Git and are not redistributed by this repository.
+AMLNet uses [IBM AMLSim](https://github.com/IBM/AMLSim) as an optional research dataset.
