@@ -23,29 +23,45 @@ const Biometrics = React.lazy(() => import('./pages/Biometrics'));
 function TopHeader() {
   const location = useLocation();
   const sessionToken = getSessionToken();
-  const [now, setNow] = useState(new Date().toUTCString());
-  const { selectedTier } = useResearch();
+  const { selectedTier, timezone, setTimezone, TIMEZONES } = useResearch();
+  const [clockStr, setClockStr] = useState('');
 
   useEffect(() => {
-    const timer = setInterval(() => setNow(new Date().toUTCString()), 1000);
+    const updateTime = () => {
+      try {
+        const d = new Date();
+        const formatted = new Intl.DateTimeFormat('en-IN', {
+          timeZone: timezone,
+          month: 'short',
+          day: '2-digit',
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit',
+          hour12: false
+        }).format(d);
+        setClockStr(formatted);
+      } catch {
+        setClockStr(new Date().toUTCString());
+      }
+    };
+    updateTime();
+    const timer = setInterval(updateTime, 1000);
     return () => clearInterval(timer);
-  }, []);
+  }, [timezone]);
 
   const getBreadcrumb = () => {
     const path = location.pathname;
-    if (path === '/') return 'Dashboard';
-    if (path.startsWith('/accounts')) return 'Account Investigation';
-    if (path.startsWith('/transactions')) return 'Transaction Explorer';
-    if (path.startsWith('/graph')) return 'Graph Explorer 2.0';
-    if (path.startsWith('/alerts')) return 'Suspicious Signals';
-    if (path.startsWith('/performance')) return 'Model Benchmarks';
+    if (path === '/') return 'Overview';
+    if (path.startsWith('/accounts')) return 'Accounts';
+    if (path.startsWith('/transactions')) return 'Transactions';
+    if (path.startsWith('/graph')) return 'Graph Explorer';
+    if (path.startsWith('/alerts')) return 'Suspicious Activity';
+    if (path.startsWith('/performance')) return 'Model Performance';
     if (path.startsWith('/management')) return 'Model Operations';
-    if (path.startsWith('/research')) return 'Research Lab';
-    if (path.startsWith('/biometrics')) return 'Biometric Passkeys';
-    return 'AMLNet';
+    if (path.startsWith('/research')) return 'Model Library';
+    if (path.startsWith('/biometrics')) return 'Security';
+    return 'Workstation';
   };
-
-  const isResearchRoute = location.pathname.startsWith('/research') || location.pathname.startsWith('/performance');
 
   return (
     <header className="top-header">
@@ -53,30 +69,41 @@ function TopHeader() {
         <div className="breadcrumbs">
           AMLNet 2.0 / <span>{getBreadcrumb()}</span>
         </div>
-        {isResearchRoute ? (
-          <div style={{ marginLeft: 16 }}>
-            <DatasetSelector compact={true} />
-          </div>
-        ) : (
-          <div style={{ marginLeft: 16 }}>
-            <span className="scope-tag demo-tag">💼 Scope: Operational Demo (100 Accounts)</span>
-          </div>
-        )}
+        <div style={{ marginLeft: 16 }}>
+          <DatasetSelector compact={true} />
+        </div>
       </div>
       <div className="header-right">
+        <div className="timezone-selector-wrap" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          <label htmlFor="tz-select" style={{ fontSize: 11, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em' }}>TZ:</label>
+          <select
+            id="tz-select"
+            value={timezone}
+            onChange={(e) => setTimezone(e.target.value)}
+            style={{
+              background: '#0e1726',
+              border: '1px solid #1e293b',
+              color: '#94a3b8',
+              fontSize: 11,
+              borderRadius: 4,
+              padding: '3px 8px',
+              fontFamily: 'var(--font-mono)'
+            }}
+          >
+            {TIMEZONES.map((tz) => (
+              <option key={tz.value} value={tz.value}>
+                {tz.label}
+              </option>
+            ))}
+          </select>
+        </div>
         {sessionToken ? (
           <div className="auth-badge" style={{ background: 'rgba(16, 185, 129, 0.15)', color: '#10b981', borderColor: 'rgba(16, 185, 129, 0.3)' }}>
-            <span>🛡️</span>
             <span>Passkey Session Active</span>
           </div>
-        ) : (
-          <div className="auth-badge">
-            <span>🔒</span>
-            <span>Standard Access</span>
-          </div>
-        )}
-        <div style={{ fontSize: 11, color: '#64748b', fontFamily: 'var(--font-mono)' }}>
-          {now}
+        ) : null}
+        <div style={{ fontSize: 11, color: '#64748b', fontFamily: 'var(--font-mono)', minWidth: 140, textAlign: 'right' }}>
+          {clockStr}
         </div>
       </div>
     </header>

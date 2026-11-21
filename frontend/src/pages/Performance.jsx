@@ -67,36 +67,16 @@ export default function Performance() {
             className={activeView === 'research' ? 'primary' : 'secondary'}
             onClick={() => setActiveView('research')}
           >
-            🔬 Research Benchmarks ({selectedTier})
+            Multi-Tier Benchmarks ({selectedTier})
           </button>
           <button
             className={activeView === 'operational' ? 'primary' : 'secondary'}
             onClick={() => setActiveView('operational')}
           >
-            💼 Operational Model (100 Accounts)
+            Active Model Checkpoint
           </button>
         </div>
       </div>
-
-      {/* Scope banner explaining the view */}
-      {activeView === 'research' ? (
-        <div className="scope-banner research-scope">
-          <div className="scope-icon">🔬</div>
-          <div className="scope-text">
-            <strong>Research Benchmark Scope ({selectedTier} Dataset):</strong> Synchronized with the global research
-            dataset selection. Displaying real measured metrics for 6 architectures trained on{' '}
-            <code>{activeTierMeta.name}</code>.
-          </div>
-        </div>
-      ) : (
-        <div className="scope-banner demo-scope">
-          <div className="scope-icon">💼</div>
-          <div className="scope-text">
-            <strong>Operational Demo Scope (100 Accounts):</strong> Reflecting the deployed GNN model artifact loaded in
-            the application database.
-          </div>
-        </div>
-      )}
 
       {/* VIEW 1: RESEARCH BENCHMARKS (DATASET-AWARE) */}
       {activeView === 'research' && (
@@ -277,7 +257,7 @@ export default function Performance() {
             <div className="panel">
               <div className="panel-header">
                 <h2 className="panel-title">GCN vs Baseline Logistic Regression</h2>
-                <span className="panel-subtitle">Held-out test set (Operational Demo)</span>
+                <span className="panel-subtitle">Held-out validation test split</span>
               </div>
               <div className="chart-container">
                 <ResponsiveContainer width="100%" height="100%">

@@ -15,6 +15,7 @@ data/*.json
 research_data/
 research/checkpoints/
 research/*.db
+!research/research_investigation.db
 research/*.sqlite*
 research/**/__pycache__/
 .DS_Store

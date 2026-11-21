@@ -4,9 +4,11 @@ import { api } from '../api';
 import { Badge } from '../components/Badge';
 import { Loading, ErrorBanner } from '../components/Loading';
 import { moneyINR } from './Dashboard';
+import { useResearch } from '../context/ResearchContext';
 
 export default function Accounts() {
   const navigate = useNavigate();
+  const { selectedTier } = useResearch();
   const [accounts, setAccounts] = useState([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -24,6 +26,7 @@ export default function Accounts() {
   const loadAccounts = () => {
     setLoading(true);
     const params = new URLSearchParams({
+      tier: selectedTier,
       search,
       page: page.toString(),
       page_size: '25'
@@ -32,8 +35,8 @@ export default function Accounts() {
 
     api(`/accounts?${params.toString()}`)
       .then((res) => {
-        setAccounts(res.items);
-        setTotal(res.total);
+        setAccounts(res.items || []);
+        setTotal(res.total || 0);
         setLoading(false);
       })
       .catch((err) => {
@@ -44,7 +47,7 @@ export default function Accounts() {
 
   useEffect(() => {
     loadAccounts();
-  }, [search, riskFilter, page]);
+  }, [search, riskFilter, page, selectedTier]);
 
   const selectAccount = (acc) => {
     setSelectedAccount(acc);
@@ -54,8 +57,8 @@ export default function Accounts() {
 
     // Fetch transactions & explanation in parallel
     Promise.all([
-      api(`/accounts/${acc.id}/transactions`),
-      api(`/explain/${acc.id}`)
+      api(`/accounts/${acc.id}/transactions?tier=${selectedTier}`),
+      api(`/explain/${acc.id}?tier=${selectedTier}`)
     ])
       .then(([txRes, explainRes]) => {
         setAccountTx(txRes.items || []);
@@ -74,16 +77,8 @@ export default function Accounts() {
         <div>
           <h1 className="page-title">Account Investigation</h1>
           <p className="page-desc">
-            Inspect entity risk profiles, GNN predictions, and Explainable AI breakdowns
+            Inspect entity risk profiles, GNN predictions, and Explainable AI breakdowns · Tier {selectedTier}
           </p>
-        </div>
-      </div>
-
-      <div className="scope-banner demo-scope">
-        <div className="scope-icon">👤</div>
-        <div className="scope-text">
-          <strong>Operational Scope (100 Accounts):</strong> Entities shown below represent the application database.
-          High-scale research datasets (100K flagship default, 1M, etc.) are managed in the <strong>Research Lab</strong>.
         </div>
       </div>
 

@@ -29,21 +29,40 @@ RELYING_PARTY = {
     "id": os.getenv("WEBAUTHN_RP_ID", "localhost")
 }
 
-def generate_registration_challenge(username: str = "investigator") -> Dict[str, Any]:
+def resolve_rp_id(origin: Optional[str] = None) -> str:
+    """Resolve WebAuthn Relying Party ID based on request Origin or environment."""
+    env_rp = os.getenv("WEBAUTHN_RP_ID")
+    if env_rp:
+        return env_rp
+    if origin:
+        # If request came from Vercel deployment
+        if "amlnet.vercel.app" in origin or "vercel.app" in origin:
+            return "amlnet.vercel.app"
+        if "localhost" in origin or "127.0.0.1" in origin:
+            return "localhost"
+    return RELYING_PARTY.get("id", "localhost")
+
+def generate_registration_challenge(username: str = "investigator", origin: Optional[str] = None) -> Dict[str, Any]:
     """Generate WebAuthn challenge options for navigator.credentials.create()"""
     challenge_bytes = secrets.token_bytes(32)
     challenge_b64 = base64.urlsafe_b64encode(challenge_bytes).decode().rstrip("=")
     user_id_b64 = base64.urlsafe_b64encode(username.encode()).decode().rstrip("=")
 
+    rp_id = resolve_rp_id(origin)
+
     CHALLENGES[challenge_b64] = {
         "username": username,
         "type": "registration",
-        "created_at": time.time()
+        "created_at": time.time(),
+        "rp_id": rp_id
     }
 
     return {
         "challenge": challenge_b64,
-        "rp": RELYING_PARTY,
+        "rp": {
+            "name": "AMLNet Financial Intelligence Workstation",
+            "id": rp_id
+        },
         "user": {
             "id": user_id_b64,
             "name": username,
@@ -90,14 +109,17 @@ def verify_registration_response(credential: Dict[str, Any]) -> Dict[str, Any]:
         "message": "Platform passkey (Touch ID / Face ID) successfully registered."
     }
 
-def generate_authentication_challenge() -> Dict[str, Any]:
+def generate_authentication_challenge(origin: Optional[str] = None) -> Dict[str, Any]:
     """Generate WebAuthn assertion options for navigator.credentials.get()"""
     challenge_bytes = secrets.token_bytes(32)
     challenge_b64 = base64.urlsafe_b64encode(challenge_bytes).decode().rstrip("=")
 
+    rp_id = resolve_rp_id(origin)
+
     CHALLENGES[challenge_b64] = {
         "type": "authentication",
-        "created_at": time.time()
+        "created_at": time.time(),
+        "rp_id": rp_id
     }
 
     allow_credentials = [
@@ -106,7 +128,7 @@ def generate_authentication_challenge() -> Dict[str, Any]:
 
     return {
         "challenge": challenge_b64,
-        "rpId": RELYING_PARTY["id"],
+        "rpId": rp_id,
         "allowCredentials": allow_credentials,
         "userVerification": "preferred",
         "timeout": 60000

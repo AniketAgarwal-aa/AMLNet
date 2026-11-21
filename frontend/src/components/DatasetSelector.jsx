@@ -15,7 +15,7 @@ export function DatasetSelector({ compact = false }) {
   if (compact) {
     return (
       <div className="dataset-selector-compact">
-        <span className="selector-label">Research Dataset:</span>
+        <span className="selector-label">Dataset:</span>
         <div className="tier-pills">
           {VALID_TIERS.map((tier) => (
             <button
@@ -48,9 +48,8 @@ export function DatasetSelector({ compact = false }) {
     <div className="dataset-selector-card">
       <div className="selector-header">
         <div className="selector-title-group">
-          <span className="selector-icon">🔬</span>
           <div>
-            <h3 className="selector-heading">AMLNet Research Benchmark Dataset</h3>
+            <h3 className="selector-heading">AMLSim Benchmark Dataset</h3>
             <p className="selector-subheading">
               Select any of the 5 verified IBM AMLSim benchmark scale tiers to explore models, topology, and metrics.
             </p>

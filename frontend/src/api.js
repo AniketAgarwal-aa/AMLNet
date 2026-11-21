@@ -25,6 +25,10 @@ export function setAdminKey(key) {
 }
 
 export async function api(path, opts = {}) {
+  const timeoutMs = opts.timeoutMs || 15000;
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+
   const headers = {
     'Content-Type': 'application/json',
     ...(opts.headers || {})
@@ -41,22 +45,33 @@ export async function api(path, opts = {}) {
   }
 
   const url = path.startsWith('http') ? path : `${BASE}${path.startsWith('/') ? '' : '/'}${path}`;
-  const response = await fetch(url, {
-    ...opts,
-    headers
-  });
 
-  if (!response.ok) {
-    const errorBody = await response.json().catch(() => ({ detail: response.statusText }));
-    throw new Error(errorBody.detail || errorBody.message || response.statusText);
-  }
+  try {
+    const response = await fetch(url, {
+      ...opts,
+      signal: controller.signal,
+      headers
+    });
 
-  // Check if response is JSON or blob/text
-  const contentType = response.headers.get('content-type') || '';
-  if (contentType.includes('application/json')) {
-    return response.json();
-  } else if (contentType.includes('text/csv') || contentType.includes('text/plain')) {
-    return response.text();
+    clearTimeout(timer);
+
+    if (!response.ok) {
+      const errorBody = await response.json().catch(() => ({ detail: response.statusText }));
+      throw new Error(errorBody.detail || errorBody.message || `HTTP ${response.status}: ${response.statusText}`);
+    }
+
+    const contentType = response.headers.get('content-type') || '';
+    if (contentType.includes('application/json')) {
+      return await response.json();
+    } else if (contentType.includes('text/csv') || contentType.includes('text/plain')) {
+      return await response.text();
+    }
+    return await response.blob();
+  } catch (err) {
+    clearTimeout(timer);
+    if (err.name === 'AbortError') {
+      throw new Error(`Request to ${path} timed out after ${timeoutMs / 1000}s. The service may be waking up.`);
+    }
+    throw err;
   }
-  return response.blob();
 }

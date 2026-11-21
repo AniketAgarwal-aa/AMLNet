@@ -3,9 +3,11 @@ import { useNavigate } from 'react-router-dom';
 import { api } from '../api';
 import { Loading, ErrorBanner } from '../components/Loading';
 import { moneyINR } from './Dashboard';
+import { useResearch } from '../context/ResearchContext';
 
 export default function Transactions() {
   const navigate = useNavigate();
+  const { selectedTier, formatTime } = useResearch();
   const [transactions, setTransactions] = useState([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -20,6 +22,7 @@ export default function Transactions() {
   const loadTransactions = () => {
     setLoading(true);
     const params = new URLSearchParams({
+      tier: selectedTier,
       account: accountFilter,
       page: page.toString(),
       page_size: '50'
@@ -29,8 +32,8 @@ export default function Transactions() {
 
     api(`/transactions?${params.toString()}`)
       .then((res) => {
-        setTransactions(res.items);
-        setTotal(res.total);
+        setTransactions(res.items || []);
+        setTotal(res.total || 0);
         setLoading(false);
       })
       .catch((err) => {
@@ -41,7 +44,7 @@ export default function Transactions() {
 
   useEffect(() => {
     loadTransactions();
-  }, [accountFilter, minAmount, scenarioFilter, page]);
+  }, [accountFilter, minAmount, scenarioFilter, page, selectedTier]);
 
   return (
     <div>
@@ -49,16 +52,8 @@ export default function Transactions() {
         <div>
           <h1 className="page-title">Transaction Explorer</h1>
           <p className="page-desc">
-            Filter, inspect, and trace directed financial transactions across the counterparty network
+            Filter, inspect, and trace directed financial transactions across the counterparty network · Tier {selectedTier}
           </p>
-        </div>
-      </div>
-
-      <div className="scope-banner demo-scope">
-        <div className="scope-icon">💳</div>
-        <div className="scope-text">
-          <strong>Operational Scope (100 Accounts / Directed Graph):</strong> Active operational transfers in the application database.
-          For 100K and 1M edge scaling analysis, refer to the <strong>Research Lab (100K Flagship Default)</strong>.
         </div>
       </div>
 
@@ -136,7 +131,7 @@ export default function Transactions() {
                         {moneyINR(tx.amount)}
                       </td>
                       <td style={{ fontSize: 11, color: '#96adcc' }}>
-                        {new Date(tx.timestamp).toLocaleString()}
+                        {formatTime(tx.timestamp)}
                       </td>
                       <td>
                         <span
@@ -226,7 +221,7 @@ export default function Transactions() {
                   </span>
                 </div>
                 <p style={{ fontSize: 12, color: '#cbd5e1' }}>
-                  Recorded at {new Date(selectedTx.timestamp).toLocaleString()} ({selectedTx.transaction_type || 'wire_transfer'}).
+                  Recorded at {formatTime(selectedTx.timestamp)} ({selectedTx.transaction_type || 'wire_transfer'}).
                 </p>
                 <div className="explain-caveat">
                   Direct transfer edge in the multi-hop financial graph.

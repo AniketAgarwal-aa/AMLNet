@@ -1,7 +1,7 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
 
-export function Navbar({ authStatus }) {
+export function Navbar() {
   return (
     <aside className="sidebar">
       <div className="brand">
@@ -9,57 +9,48 @@ export function Navbar({ authStatus }) {
           AML<span>Net</span>
           <span className="brand-badge">2.0</span>
         </div>
-        <div className="brand-subtitle">Financial Intelligence</div>
+        <div className="brand-subtitle">Financial Intelligence Platform</div>
       </div>
 
       <nav className="nav-menu">
         <div className="nav-section-title">Investigation</div>
         <NavLink end to="/" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
-          <span>📊</span>
-          <span>Dashboard</span>
+          <span>Overview</span>
         </NavLink>
         <NavLink to="/accounts" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
-          <span>👤</span>
           <span>Accounts</span>
         </NavLink>
         <NavLink to="/transactions" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
-          <span>💳</span>
           <span>Transactions</span>
         </NavLink>
         <NavLink to="/graph" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
-          <span>🕸️</span>
-          <span>Graph Explorer 2.0</span>
+          <span>Graph Explorer</span>
         </NavLink>
         <NavLink to="/alerts" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
-          <span>🚨</span>
-          <span>Suspicious Signals</span>
+          <span>Suspicious Activity</span>
         </NavLink>
 
         <div className="nav-section-title">Models & Systems</div>
         <NavLink to="/performance" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
-          <span>📈</span>
           <span>Model Performance</span>
         </NavLink>
         <NavLink to="/management" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
-          <span>⚙️</span>
-          <span>Model Management</span>
+          <span>Model Operations</span>
         </NavLink>
 
         <div className="nav-section-title">Research & Security</div>
         <NavLink to="/research" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
-          <span>🔬</span>
-          <span>Research Lab</span>
+          <span>Model Library</span>
         </NavLink>
         <NavLink to="/biometrics" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
-          <span>🛡️</span>
-          <span>Biometric Passkeys</span>
+          <span>Security</span>
         </NavLink>
       </nav>
 
       <div className="sidebar-footer">
         <div className="system-status">
           <span className="status-dot" />
-          <span>System Healthy · MPS / CPU</span>
+          <span>Multi-Tier Active</span>
         </div>
       </div>
     </aside>

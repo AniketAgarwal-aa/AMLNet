@@ -5,8 +5,10 @@ import { api } from '../api';
 import { Badge } from '../components/Badge';
 import { Loading, ErrorBanner } from '../components/Loading';
 import { moneyINR } from './Dashboard';
+import { useResearch } from '../context/ResearchContext';
 
 export default function GraphExplorer() {
+  const { selectedTier } = useResearch();
   const [searchParams] = useSearchParams();
   const initialAccount = searchParams.get('account') || '';
 
@@ -26,7 +28,7 @@ export default function GraphExplorer() {
   const loadFullGraph = () => {
     setLoading(true);
     setIsNeighborhood(false);
-    const params = new URLSearchParams({ limit: '300' });
+    const params = new URLSearchParams({ tier: selectedTier, limit: '80' });
     if (riskFilter) params.append('risk_level', riskFilter);
 
     api(`/graph?${params.toString()}`)
@@ -44,7 +46,7 @@ export default function GraphExplorer() {
     if (!accountId) return;
     setLoading(true);
     setIsNeighborhood(true);
-    api(`/graph/subgraph?account_id=${encodeURIComponent(accountId)}&hops=1&limit=150`)
+    api(`/graph/subgraph?tier=${selectedTier}&account_id=${encodeURIComponent(accountId)}&hops=1&limit=80`)
       .then((res) => {
         setGraphData(res);
         setLoading(false);
@@ -61,7 +63,7 @@ export default function GraphExplorer() {
     } else {
       loadFullGraph();
     }
-  }, [riskFilter]);
+  }, [riskFilter, selectedTier]);
 
   // Initialize Cytoscape
   useEffect(() => {
@@ -122,9 +124,11 @@ export default function GraphExplorer() {
       layout: {
         name: isNeighborhood ? 'concentric' : 'cose',
         animate: false,
-        nodeRepulsion: 9500,
-        idealEdgeLength: 120,
-        padding: 30
+        nodeRepulsion: 18000,
+        idealEdgeLength: 140,
+        edgeElasticity: 100,
+        gravity: 0.25,
+        padding: 40
       }
     });
 
@@ -181,19 +185,10 @@ export default function GraphExplorer() {
     <div>
       <div className="page-header">
         <div>
-          <h1 className="page-title">Graph Explorer 2.0</h1>
+          <h1 className="page-title">Graph Explorer</h1>
           <p className="page-desc">
-            Interactive directed network visualization with multi-hop ego-neighborhood expansion
+            Interactive directed network visualization with multi-hop ego-neighborhood expansion · Tier {selectedTier}
           </p>
-        </div>
-      </div>
-
-      <div className="scope-banner demo-scope">
-        <div className="scope-icon">🕸️</div>
-        <div className="scope-text">
-          <strong>Operational Graph Scope (100 Accounts):</strong> Interactive WebGL / Cytoscape network representing
-          the operational demo database. Complete 100K (12.5M edges) and 1M (125M edges) research topologies exceed
-          client GPU texture memory and are explored via targeted ego-neighborhood API queries (<code>/api/graph/subgraph</code>).
         </div>
       </div>
 

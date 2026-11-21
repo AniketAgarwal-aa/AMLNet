@@ -3,6 +3,7 @@ import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip, BarChart, Bar, XAxis
 import { api } from '../api';
 import { Badge } from '../components/Badge';
 import { Loading, ErrorBanner } from '../components/Loading';
+import { useResearch } from '../context/ResearchContext';
 
 export const moneyINR = (n) =>
   new Intl.NumberFormat('en-IN', {
@@ -12,13 +13,14 @@ export const moneyINR = (n) =>
   }).format(Number(n) || 0);
 
 export default function Dashboard() {
+  const { selectedTier } = useResearch();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   const loadData = () => {
     setLoading(true);
-    api('/dashboard')
+    api(`/dashboard?tier=${selectedTier}`)
       .then((res) => {
         setData(res);
         setLoading(false);
@@ -31,10 +33,10 @@ export default function Dashboard() {
 
   useEffect(() => {
     loadData();
-  }, []);
+  }, [selectedTier]);
 
-  if (loading) return <Loading message="Loading financial intelligence overview…" />;
-  if (error) return <ErrorBanner error={error} retry={loadData} />;
+  if (loading && !data) return <Loading message="Loading financial intelligence overview…" />;
+  if (error && !data) return <ErrorBanner error={error} retry={loadData} />;
   if (!data) return null;
 
   const riskPie = Object.entries(data.risk_distribution || {}).map(([name, value]) => ({ name, value }));
@@ -51,18 +53,11 @@ export default function Dashboard() {
         <div>
           <h1 className="page-title">Financial Intelligence Overview</h1>
           <p className="page-desc">
-            Autonomous Graph Neural Network & Typology Monitoring Platform
+            Graph Neural Network & AML Typology Workstation · Tier {selectedTier} Active
           </p>
         </div>
         <div>
           <button className="secondary" onClick={loadData}>Refresh Data</button>
-        </div>
-      </div>
-
-      <div className="scope-banner demo-scope">
-        <div className="scope-icon">💼</div>
-        <div className="scope-text">
-          <strong>Operational Demo Scope (100 Accounts):</strong> Reflecting live transactions and accounts stored in the application database. To explore multi-tier scale benchmarks, visit the <strong>Research Lab (100K Flagship Default)</strong>.
         </div>
       </div>
 

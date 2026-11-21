@@ -4,6 +4,100 @@ import { api } from '../api';
 const DEFAULT_TIER = '100K';
 const VALID_TIERS = ['100', '1K', '10K', '100K', '1M'];
 const STORAGE_KEY = 'amlnet_selected_tier';
+const TZ_STORAGE_KEY = 'amlnet_timezone';
+
+export const TIMEZONES = [
+  { value: 'Asia/Kolkata', label: 'Asia/Kolkata (IST · UTC+5:30)' },
+  { value: 'America/New_York', label: 'New York (EST/EDT · UTC-5)' },
+  { value: 'America/Los_Angeles', label: 'Los Angeles (PST/PDT · UTC-8)' },
+  { value: 'Europe/London', label: 'London (GMT/BST · UTC+0)' },
+  { value: 'Asia/Dubai', label: 'Dubai (GST · UTC+4)' },
+  { value: 'Asia/Singapore', label: 'Singapore (SGT · UTC+8)' },
+  { value: 'Asia/Tokyo', label: 'Tokyo (JST · UTC+9)' },
+  { value: 'UTC', label: 'UTC (Universal Coordinated Time)' }
+];
+
+const FALLBACK_CATALOG = {
+  default_tier: '100K',
+  default_dataset_key: 'amlsim_100kv_10me',
+  tiers: [
+    {
+      tier_id: '100',
+      name: 'Tier 1: 100 Accounts',
+      scale_label: '100 Accounts',
+      dataset_key: 'amlsim_100v_10ke',
+      status: 'Completed',
+      is_default: false,
+      accounts: 100,
+      transactions: 17144,
+      sar_accounts: 18,
+      size_human: '0.79 MB',
+      full_coverage: true,
+      coverage_pct: 100.0,
+      description: 'Baseline simulation graph for rapid development and testing.'
+    },
+    {
+      tier_id: '1K',
+      name: 'Tier 2: 1,000 Accounts',
+      scale_label: '1,000 Accounts',
+      dataset_key: 'amlsim_1kv_100ke',
+      status: 'Completed',
+      is_default: false,
+      accounts: 1000,
+      transactions: 117533,
+      sar_accounts: 162,
+      size_human: '5.01 MB',
+      full_coverage: true,
+      coverage_pct: 100.0,
+      description: 'Small graph benchmark; 100% complete dataset ingested and trained.'
+    },
+    {
+      tier_id: '10K',
+      name: 'Tier 3: 10,000 Accounts',
+      scale_label: '10,000 Accounts',
+      dataset_key: 'amlsim_10kv_1me',
+      status: 'Completed',
+      is_default: false,
+      accounts: 10000,
+      transactions: 1323234,
+      sar_accounts: 1685,
+      size_human: '58.76 MB',
+      full_coverage: false,
+      coverage_pct: 18.89,
+      description: 'Medium graph benchmark; 250,000 transactions sampled under Balanced budget.'
+    },
+    {
+      tier_id: '100K',
+      name: 'Tier 4: 100,000 Accounts (DEFAULT)',
+      scale_label: '100,000 Accounts',
+      dataset_key: 'amlsim_100kv_10me',
+      status: 'Completed',
+      is_default: true,
+      accounts: 100000,
+      transactions: 12476012,
+      sar_accounts: 17091,
+      size_human: '585.56 MB',
+      full_coverage: false,
+      coverage_pct: 2.0,
+      description: 'Large graph benchmark; 25,000 accounts & 250,000 transactions sampled under Balanced profile.'
+    },
+    {
+      tier_id: '1M',
+      name: 'Tier 5: 1,000,000 Accounts',
+      scale_label: '1,000,000 Accounts',
+      dataset_key: 'amlsim_1mv_100me',
+      status: 'Resource-limited (Benchmarked)',
+      is_default: false,
+      accounts: 1000000,
+      transactions: 124703184,
+      sar_accounts: 171455,
+      size_human: '6,210.43 MB',
+      full_coverage: false,
+      coverage_pct: 0.0,
+      description: 'Very large graph benchmark (125M edges); Light profile streaming benchmarked.'
+    }
+  ]
+};
 
 const ResearchContext = createContext(null);
 
@@ -16,7 +110,6 @@ export function useResearch() {
 }
 
 export function ResearchProvider({ children }) {
-  // Read initial tier from URL query param (?tier=100K) or localStorage, defaulting strictly to 100K
   const getInitialTier = () => {
     try {
       const params = new URLSearchParams(window.location.search);
@@ -34,18 +127,29 @@ export function ResearchProvider({ children }) {
     return DEFAULT_TIER;
   };
 
+  const getInitialTimezone = () => {
+    try {
+      const stored = localStorage.getItem(TZ_STORAGE_KEY);
+      if (stored && TIMEZONES.some(t => t.value === stored)) {
+        return stored;
+      }
+    } catch {
+      // Fallback
+    }
+    return 'Asia/Kolkata';
+  };
+
   const [selectedTier, setSelectedTierState] = useState(getInitialTier);
+  const [timezone, setTimezoneState] = useState(getInitialTimezone);
   const [rankingMetric, setRankingMetric] = useState('f1');
-  const [datasetsData, setDatasetsData] = useState(null);
+  const [datasetsData, setDatasetsData] = useState(FALLBACK_CATALOG);
   const [tierExperiments, setTierExperiments] = useState([]);
   const [allExperiments, setAllExperiments] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  // Stale-response protection counter
   const fetchCounterRef = useRef(0);
 
-  // Sync selection to localStorage and URL query param
   const setSelectedTier = (tier) => {
     const sanitized = VALID_TIERS.includes(tier) ? tier : DEFAULT_TIER;
     setSelectedTierState(sanitized);
@@ -59,59 +163,70 @@ export function ResearchProvider({ children }) {
     }
   };
 
+  const setTimezone = (tz) => {
+    setTimezoneState(tz);
+    try {
+      localStorage.setItem(TZ_STORAGE_KEY, tz);
+    } catch {
+      // Ignore
+    }
+  };
+
   const resetToDefault = () => {
     setSelectedTier(DEFAULT_TIER);
   };
 
-  // Fetch datasets catalog (once) and tier-specific experiments on tier change
+  // Helper to format timestamps consistently according to selected timezone
+  const formatTime = (ts) => {
+    if (!ts && ts !== 0) return '—';
+    try {
+      const d = typeof ts === 'number' && ts < 100000 ? new Date(Date.now() - (100000 - ts) * 60000) : new Date(ts);
+      if (isNaN(d.getTime())) return String(ts);
+      return new Intl.DateTimeFormat('en-IN', {
+        timeZone: timezone,
+        year: 'numeric',
+        month: 'short',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: false
+      }).format(d);
+    } catch {
+      return String(ts);
+    }
+  };
+
   useEffect(() => {
     const currentFetchId = ++fetchCounterRef.current;
-    setLoading(true);
     setError(null);
 
     Promise.all([
-      datasetsData ? Promise.resolve(datasetsData) : api('/research/datasets'),
-      api(`/research/experiments?tier=${selectedTier}`),
-      api('/research/experiments?limit=100')
+      api('/research/datasets').catch(() => FALLBACK_CATALOG),
+      api(`/research/experiments?tier=${selectedTier}`).catch(() => ({ experiments: [] })),
+      api('/research/experiments?limit=100').catch(() => ({ experiments: [] }))
     ])
       .then(([dsRes, tierExpRes, allExpRes]) => {
-        // Discard stale responses if a newer request was dispatched
         if (currentFetchId !== fetchCounterRef.current) return;
-
-        if (!datasetsData) {
+        if (dsRes && dsRes.tiers) {
           setDatasetsData(dsRes);
         }
         setTierExperiments(tierExpRes.experiments || []);
         setAllExperiments(allExpRes.experiments || []);
-        setLoading(false);
       })
       .catch((err) => {
         if (currentFetchId !== fetchCounterRef.current) return;
         setError(err);
-        setLoading(false);
       });
   }, [selectedTier]);
 
-  // Derived metadata for the currently selected tier
-  const tiers = datasetsData?.tiers || [];
+  const tiers = datasetsData?.tiers || FALLBACK_CATALOG.tiers;
   const auditData = datasetsData?.audit || {};
 
   const activeTierMeta = useMemo(() => {
     const found = tiers.find((t) => t.tier_id === selectedTier);
     if (found) return found;
-    // Fallback if not loaded yet
-    return {
-      tier_id: selectedTier,
-      name: selectedTier === '100K' ? 'Tier 4: 100,000 Accounts (DEFAULT)' : `Tier ${selectedTier}`,
-      scale_label: `${selectedTier} Accounts`,
-      dataset_key: selectedTier === '100K' ? 'amlsim_100kv_10me' : `amlsim_${selectedTier.toLowerCase()}v`,
-      accounts: selectedTier === '100K' ? 100000 : 0,
-      transactions: selectedTier === '100K' ? 12476012 : 0,
-      sar_accounts: selectedTier === '100K' ? 17091 : 0,
-      size_human: selectedTier === '100K' ? '585.56 MB' : '',
-      coverage_pct: selectedTier === '100K' ? 2.0 : 100.0,
-      full_coverage: selectedTier === '1K' || selectedTier === '100'
-    };
+    return FALLBACK_CATALOG.tiers.find((t) => t.tier_id === selectedTier) || FALLBACK_CATALOG.tiers[3];
   }, [tiers, selectedTier]);
 
   const activeAudit = useMemo(() => {
@@ -119,7 +234,6 @@ export function ResearchProvider({ children }) {
     return auditData[activeTierMeta.dataset_key] || {};
   }, [auditData, activeTierMeta]);
 
-  // Active coverage details
   const activeCoverage = useMemo(() => {
     return activeTierMeta.coverage_details || {
       full_source_accounts: activeTierMeta.accounts || 0,
@@ -139,7 +253,6 @@ export function ResearchProvider({ children }) {
     };
   }, [activeTierMeta]);
 
-  // Determine best model based on chosen rankingMetric
   const bestModel = useMemo(() => {
     if (!tierExperiments.length) return null;
     const sorted = [...tierExperiments].sort((a, b) => {
@@ -153,7 +266,6 @@ export function ResearchProvider({ children }) {
     return sorted[0];
   }, [tierExperiments, rankingMetric]);
 
-  // Chart data for selected tier
   const chartData = useMemo(() => {
     return tierExperiments.map((e) => {
       const m = e.metrics || {};
@@ -179,6 +291,10 @@ export function ResearchProvider({ children }) {
     resetToDefault,
     DEFAULT_TIER,
     VALID_TIERS,
+    timezone,
+    setTimezone,
+    TIMEZONES,
+    formatTime,
     rankingMetric,
     setRankingMetric,
     tiers,

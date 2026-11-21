@@ -4,9 +4,11 @@ import { api } from '../api';
 import { Badge } from '../components/Badge';
 import { Loading, ErrorBanner } from '../components/Loading';
 import { moneyINR } from './Dashboard';
+import { useResearch } from '../context/ResearchContext';
 
 export default function Alerts() {
   const navigate = useNavigate();
+  const { selectedTier } = useResearch();
   const [alerts, setAlerts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -14,8 +16,9 @@ export default function Alerts() {
 
   const loadAlerts = () => {
     setLoading(true);
-    const url = patternFilter ? `/alerts?pattern_type=${patternFilter}` : '/alerts';
-    api(url)
+    const params = new URLSearchParams({ tier: selectedTier });
+    if (patternFilter) params.append('pattern_type', patternFilter);
+    api(`/alerts?${params.toString()}`)
       .then((res) => {
         setAlerts(res.items || []);
         setLoading(false);
@@ -28,7 +31,7 @@ export default function Alerts() {
 
   useEffect(() => {
     loadAlerts();
-  }, [patternFilter]);
+  }, [patternFilter, selectedTier]);
 
   return (
     <div>
@@ -36,7 +39,7 @@ export default function Alerts() {
         <div>
           <h1 className="page-title">Suspicious Activity Signals</h1>
           <p className="page-desc">
-            Rule-based and graph topological alert indicators identified across transaction sequences
+            Rule-based and graph topological alert indicators identified across transaction sequences · Tier {selectedTier}
           </p>
         </div>
       </div>

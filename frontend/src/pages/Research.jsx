@@ -151,13 +151,11 @@ export default function Research() {
         </div>
       </div>
 
-      {/* Production Demo vs Research Scope Warning / Pill */}
+      {/* Research Scope Banner */}
       <div className="scope-banner research-scope">
-        <div className="scope-icon">🔬</div>
         <div className="scope-text">
           <strong>Research Workspace Scope:</strong> Viewing verified experiment benchmarks and topological metrics for{' '}
-          <code>{activeTierMeta.name}</code> ({activeTierMeta.dataset_key}). Production operational demo (100 accounts)
-          remains strictly isolated in Neon/SQLite operational storage.
+          <code>{activeTierMeta.name}</code> ({activeTierMeta.dataset_key}).
         </div>
       </div>
 
@@ -239,7 +237,7 @@ export default function Research() {
           className={`tab-btn ${activeTab === 'library' ? 'active' : ''}`}
           onClick={() => setActiveTab('library')}
         >
-          🤗 Hugging Face Library
+          Hugging Face Library
         </button>
       </div>
 
@@ -251,7 +249,7 @@ export default function Research() {
             <div className="best-model-card" style={{ marginTop: 16 }}>
               <div className="best-model-header">
                 <div>
-                  <div className="best-tag">🏆 LEADING ARCHITECTURE ON {selectedTier}</div>
+                  <div className="best-tag">LEADING ARCHITECTURE ON {selectedTier}</div>
                   <h2 className="best-model-title">{bestModel.model_name.replace('_', ' ').toUpperCase()}</h2>
                   <p className="best-model-desc">
                     Evaluated on stratified held-out test split (20%) using validation-tuned decision threshold.
@@ -806,7 +804,7 @@ export default function Research() {
             <div className="card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 16 }}>
               <div>
                 <h3 className="card-title" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  🤗 Hugging Face Model Repository
+                  Hugging Face Model Repository
                   <span className="badge highlight">AniketAgarwal-aa/AMLNet-Research</span>
                 </h3>
                 <p className="card-subtitle">
@@ -828,7 +826,7 @@ export default function Research() {
 
             {/* Governance & Safety Alert */}
             <div className="alert-box" style={{ background: 'rgba(59, 130, 246, 0.08)', border: '1px solid rgba(59, 130, 246, 0.25)', borderRadius: 8, padding: '12px 16px', margin: '16px 0', fontSize: 13, lineHeight: 1.5 }}>
-              <strong>🛡️ Governance & Isolation Boundary:</strong> Checkpoints are published strictly for academic benchmarking and algorithmic research. Models downloaded from Hugging Face run in read-only mode and are never automatically promoted to production without hardware-backed WebAuthn administrative approval.
+              <strong>Governance & Isolation Boundary:</strong> Checkpoints are published strictly for academic benchmarking and algorithmic research. Models downloaded from Hugging Face run in read-only mode and are never automatically promoted to production without hardware-backed WebAuthn administrative approval.
             </div>
 
             {libraryLoading ? (
@@ -894,7 +892,7 @@ export default function Research() {
                 {/* Reproducible Inference Walkthrough */}
                 <div style={{ marginTop: 24, padding: 16, background: '#0f172a', borderRadius: 8, border: '1px solid #1e293b' }}>
                   <h4 style={{ margin: '0 0 8px 0', fontSize: 14, color: '#e2e8f0' }}>
-                    💻 Standalone Inference Smoke Test (Python 3.11+ / PyG 2.6+)
+                    Standalone Inference Verification (Python 3.11+ / PyG 2.6+)
                   </h4>
                   <pre style={{ margin: 0, padding: 12, background: '#020617', borderRadius: 6, fontSize: 12, color: '#38bdf8', overflowX: 'auto', fontFamily: 'monospace' }}>
 {`# 1. Clone Hugging Face model repository

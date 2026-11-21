@@ -13,6 +13,7 @@ dist/
 coverage/
 *.log
 backend/data/*.db
+!backend/research/research_investigation.db
 backend/data/accounts.csv
 backend/data/transactions.csv
 backend/data/dataset_metadata.json
@@ -21,6 +22,7 @@ backend/artifacts/*
 *.sqlite
 *.sqlite3
 *.db
+!backend/research/research_investigation.db
 neon/.env*
 .DS_Store
 .neon
