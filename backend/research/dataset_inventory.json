@@ -1,0 +1,664 @@
+{
+  "synthetic_demo": {
+    "dataset_name": "AMLNet Synthetic Demo Dataset",
+    "publisher_source": "AMLNet in-house synthetic generator (deterministic seed)",
+    "local_location": "./backend/data",
+    "file_names": [
+      "dataset_metadata.json",
+      "accounts.csv",
+      "amlnet.db",
+      "transactions.csv"
+    ],
+    "file_formats": [
+      "CSV",
+      "JSON",
+      "SQLite DB"
+    ],
+    "dataset_size_bytes": 231374,
+    "dataset_size_human": "0.22 MB",
+    "num_transactions": 500,
+    "num_accounts": 100,
+    "num_graph_nodes": 100,
+    "num_graph_edges": 500,
+    "label_distribution": {
+      "account_normal": 80,
+      "account_suspicious": 20,
+      "account_fraud_ratio": 0.2,
+      "transaction_normal": 420,
+      "transaction_suspicious": 80
+    },
+    "source_currency": "INR (Explicitly denominated for local AML demo)",
+    "account_attributes": [
+      "id",
+      "account_type",
+      "label",
+      "scenario"
+    ],
+    "transaction_attributes": [
+      "id",
+      "source_id",
+      "target_id",
+      "amount",
+      "timestamp",
+      "transaction_type",
+      "scenario"
+    ],
+    "missing_values": {
+      "accounts": {
+        "id": 0,
+        "account_type": 0,
+        "label": 0,
+        "scenario": 0
+      },
+      "transactions": {
+        "id": 0,
+        "source_id": 0,
+        "target_id": 0,
+        "amount": 0,
+        "timestamp": 0,
+        "transaction_type": 0,
+        "scenario": 0
+      }
+    },
+    "duplicates": {
+      "account_id_duplicates": 0,
+      "transaction_id_duplicates": 0
+    },
+    "licensing": "MIT (Part of AMLNet open source repository)",
+    "suitable_ml_tasks": [
+      "Node Classification",
+      "Rule-based typology detection",
+      "Interactive Graph Exploration"
+    ]
+  },
+  "amlsim_100v_10ke": {
+    "dataset_name": "IBM AMLSim amlsim_100v_10ke",
+    "publisher_source": "IBM Research AMLSim Agent-Based Financial Crime Simulation",
+    "local_location": "./100vertices-10Kedges",
+    "file_names": [
+      ".DS_Store",
+      "accounts.csv",
+      "alerts.csv",
+      "transactions.csv"
+    ],
+    "file_formats": [
+      "CSV",
+      "JSON",
+      "Properties"
+    ],
+    "dataset_size_bytes": 827659,
+    "dataset_size_human": "0.79 MB",
+    "num_transactions": 17144,
+    "num_accounts": 100,
+    "num_graph_nodes": 100,
+    "num_graph_edges": 17144,
+    "label_distribution": {
+      "account_normal": 81,
+      "account_suspicious": 19,
+      "account_fraud_ratio": 0.19,
+      "transaction_normal": 17126,
+      "transaction_suspicious": 18,
+      "transaction_fraud_ratio": 0.00105
+    },
+    "alerts_count": 18,
+    "alerts_suspicious": 18,
+    "alerts_distribution": {
+      "cycle": 10,
+      "fan_in": 8
+    },
+    "timestamp_availability": {
+      "min_timestamp_step": 0.0,
+      "max_timestamp_step": 199.0,
+      "time_steps_span": 200.0
+    },
+    "source_currency": "USD (AMLSim simulation base default currency)",
+    "account_attributes": [
+      "ACCOUNT_ID",
+      "CUSTOMER_ID",
+      "INIT_BALANCE",
+      "COUNTRY",
+      "ACCOUNT_TYPE",
+      "IS_FRAUD",
+      "TX_BEHAVIOR_ID"
+    ],
+    "transaction_attributes": [
+      "TX_ID",
+      "SENDER_ACCOUNT_ID",
+      "RECEIVER_ACCOUNT_ID",
+      "TX_TYPE",
+      "TX_AMOUNT",
+      "TIMESTAMP",
+      "IS_FRAUD",
+      "ALERT_ID"
+    ],
+    "missing_values": {
+      "accounts": {
+        "ACCOUNT_ID": 0,
+        "CUSTOMER_ID": 0,
+        "INIT_BALANCE": 0,
+        "COUNTRY": 0,
+        "ACCOUNT_TYPE": 0,
+        "IS_FRAUD": 0,
+        "TX_BEHAVIOR_ID": 0
+      },
+      "transactions": {
+        "TX_ID": 0,
+        "SENDER_ACCOUNT_ID": 0,
+        "RECEIVER_ACCOUNT_ID": 0,
+        "TX_TYPE": 0,
+        "TX_AMOUNT": 0,
+        "TIMESTAMP": 0,
+        "IS_FRAUD": 0,
+        "ALERT_ID": 0
+      }
+    },
+    "duplicates": {
+      "account_id_duplicates": 0,
+      "transaction_id_duplicates_within_chunks": 0
+    },
+    "licensing": "Apache-2.0 (IBM Research)",
+    "suitable_ml_tasks": [
+      "Node Classification (Account-level AML/SAR detection)",
+      "Edge Classification (Transaction-level AML detection)",
+      "Graph Classification / Subgraph Typology Detection (Cycle, Fan-in, Fan-out, Scatter-Gather)",
+      "Dynamic/Temporal Link Prediction"
+    ]
+  },
+  "amlsim_1kv_100ke": {
+    "dataset_name": "IBM AMLSim amlsim_1kv_100ke",
+    "publisher_source": "IBM Research AMLSim Agent-Based Financial Crime Simulation",
+    "local_location": "./1Kvertices-100Kedges",
+    "file_names": [
+      ".DS_Store",
+      "accounts.csv",
+      "alerts.csv",
+      "transactions.csv"
+    ],
+    "file_formats": [
+      "CSV",
+      "JSON",
+      "Properties"
+    ],
+    "dataset_size_bytes": 5255540,
+    "dataset_size_human": "5.01 MB",
+    "num_transactions": 117533,
+    "num_accounts": 1000,
+    "num_graph_nodes": 1000,
+    "num_graph_edges": 117533,
+    "label_distribution": {
+      "account_normal": 838,
+      "account_suspicious": 162,
+      "account_fraud_ratio": 0.162,
+      "transaction_normal": 117358,
+      "transaction_suspicious": 175,
+      "transaction_fraud_ratio": 0.001489
+    },
+    "alerts_count": 175,
+    "alerts_suspicious": 175,
+    "alerts_distribution": {
+      "cycle": 96,
+      "fan_in": 79
+    },
+    "timestamp_availability": {
+      "min_timestamp_step": 0.0,
+      "max_timestamp_step": 199.0,
+      "time_steps_span": 200.0
+    },
+    "source_currency": "USD (AMLSim simulation base default currency)",
+    "account_attributes": [
+      "ACCOUNT_ID",
+      "CUSTOMER_ID",
+      "INIT_BALANCE",
+      "COUNTRY",
+      "ACCOUNT_TYPE",
+      "IS_FRAUD",
+      "TX_BEHAVIOR_ID"
+    ],
+    "transaction_attributes": [
+      "TX_ID",
+      "SENDER_ACCOUNT_ID",
+      "RECEIVER_ACCOUNT_ID",
+      "TX_TYPE",
+      "TX_AMOUNT",
+      "TIMESTAMP",
+      "IS_FRAUD",
+      "ALERT_ID"
+    ],
+    "missing_values": {
+      "accounts": {
+        "ACCOUNT_ID": 0,
+        "CUSTOMER_ID": 0,
+        "INIT_BALANCE": 0,
+        "COUNTRY": 0,
+        "ACCOUNT_TYPE": 0,
+        "IS_FRAUD": 0,
+        "TX_BEHAVIOR_ID": 0
+      },
+      "transactions": {
+        "TX_ID": 0,
+        "SENDER_ACCOUNT_ID": 0,
+        "RECEIVER_ACCOUNT_ID": 0,
+        "TX_TYPE": 0,
+        "TX_AMOUNT": 0,
+        "TIMESTAMP": 0,
+        "IS_FRAUD": 0,
+        "ALERT_ID": 0
+      }
+    },
+    "duplicates": {
+      "account_id_duplicates": 0,
+      "transaction_id_duplicates_within_chunks": 0
+    },
+    "licensing": "Apache-2.0 (IBM Research)",
+    "suitable_ml_tasks": [
+      "Node Classification (Account-level AML/SAR detection)",
+      "Edge Classification (Transaction-level AML detection)",
+      "Graph Classification / Subgraph Typology Detection (Cycle, Fan-in, Fan-out, Scatter-Gather)",
+      "Dynamic/Temporal Link Prediction"
+    ]
+  },
+  "amlsim_10kv_1me": {
+    "dataset_name": "IBM AMLSim amlsim_10kv_1me",
+    "publisher_source": "IBM Research AMLSim Agent-Based Financial Crime Simulation",
+    "local_location": "./10Kvertices-1Medges",
+    "file_names": [
+      ".DS_Store",
+      "accounts.csv",
+      "alerts.csv",
+      "transactions.csv"
+    ],
+    "file_formats": [
+      "CSV",
+      "JSON",
+      "Properties"
+    ],
+    "dataset_size_bytes": 61617496,
+    "dataset_size_human": "58.76 MB",
+    "num_transactions": 1323234,
+    "num_accounts": 10000,
+    "num_graph_nodes": 10000,
+    "num_graph_edges": 1323234,
+    "label_distribution": {
+      "account_normal": 8315,
+      "account_suspicious": 1685,
+      "account_fraud_ratio": 0.1685,
+      "transaction_normal": 1321515,
+      "transaction_suspicious": 1719,
+      "transaction_fraud_ratio": 0.001299
+    },
+    "alerts_count": 1719,
+    "alerts_suspicious": 1719,
+    "alerts_distribution": {
+      "cycle": 936,
+      "fan_in": 783
+    },
+    "timestamp_availability": {
+      "min_timestamp_step": 0.0,
+      "max_timestamp_step": 199.0,
+      "time_steps_span": 200.0
+    },
+    "source_currency": "USD (AMLSim simulation base default currency)",
+    "account_attributes": [
+      "ACCOUNT_ID",
+      "CUSTOMER_ID",
+      "INIT_BALANCE",
+      "COUNTRY",
+      "ACCOUNT_TYPE",
+      "IS_FRAUD",
+      "TX_BEHAVIOR_ID"
+    ],
+    "transaction_attributes": [
+      "TX_ID",
+      "SENDER_ACCOUNT_ID",
+      "RECEIVER_ACCOUNT_ID",
+      "TX_TYPE",
+      "TX_AMOUNT",
+      "TIMESTAMP",
+      "IS_FRAUD",
+      "ALERT_ID"
+    ],
+    "missing_values": {
+      "accounts": {
+        "ACCOUNT_ID": 0,
+        "CUSTOMER_ID": 0,
+        "INIT_BALANCE": 0,
+        "COUNTRY": 0,
+        "ACCOUNT_TYPE": 0,
+        "IS_FRAUD": 0,
+        "TX_BEHAVIOR_ID": 0
+      },
+      "transactions": {
+        "TX_ID": 0,
+        "SENDER_ACCOUNT_ID": 0,
+        "RECEIVER_ACCOUNT_ID": 0,
+        "TX_TYPE": 0,
+        "TX_AMOUNT": 0,
+        "TIMESTAMP": 0,
+        "IS_FRAUD": 0,
+        "ALERT_ID": 0
+      }
+    },
+    "duplicates": {
+      "account_id_duplicates": 0,
+      "transaction_id_duplicates_within_chunks": 0
+    },
+    "licensing": "Apache-2.0 (IBM Research)",
+    "suitable_ml_tasks": [
+      "Node Classification (Account-level AML/SAR detection)",
+      "Edge Classification (Transaction-level AML detection)",
+      "Graph Classification / Subgraph Typology Detection (Cycle, Fan-in, Fan-out, Scatter-Gather)",
+      "Dynamic/Temporal Link Prediction"
+    ]
+  },
+  "amlsim_100kv_10me": {
+    "dataset_name": "IBM AMLSim amlsim_100kv_10me",
+    "publisher_source": "IBM Research AMLSim Agent-Based Financial Crime Simulation",
+    "local_location": "./100Kvertices-10Medges",
+    "file_names": [
+      ".DS_Store",
+      "accounts.csv",
+      "alerts.csv",
+      "transactions.csv"
+    ],
+    "file_formats": [
+      "CSV",
+      "JSON",
+      "Properties"
+    ],
+    "dataset_size_bytes": 614008814,
+    "dataset_size_human": "585.56 MB",
+    "num_transactions": 12476012,
+    "num_accounts": 100000,
+    "num_graph_nodes": 100000,
+    "num_graph_edges": 12476012,
+    "label_distribution": {
+      "account_normal": 82909,
+      "account_suspicious": 17091,
+      "account_fraud_ratio": 0.17091,
+      "transaction_normal": 12458960,
+      "transaction_suspicious": 17052,
+      "transaction_fraud_ratio": 0.001367
+    },
+    "alerts_count": 17052,
+    "alerts_suspicious": 17052,
+    "alerts_distribution": {
+      "cycle": 9513,
+      "fan_in": 7539
+    },
+    "timestamp_availability": {
+      "min_timestamp_step": 0.0,
+      "max_timestamp_step": 1.0,
+      "time_steps_span": 2.0
+    },
+    "source_currency": "USD (AMLSim simulation base default currency)",
+    "account_attributes": [
+      "ACCOUNT_ID",
+      "CUSTOMER_ID",
+      "INIT_BALANCE",
+      "COUNTRY",
+      "ACCOUNT_TYPE",
+      "IS_FRAUD",
+      "TX_BEHAVIOR_ID"
+    ],
+    "transaction_attributes": [
+      "TX_ID",
+      "SENDER_ACCOUNT_ID",
+      "RECEIVER_ACCOUNT_ID",
+      "TX_TYPE",
+      "TX_AMOUNT",
+      "TIMESTAMP",
+      "IS_FRAUD",
+      "ALERT_ID"
+    ],
+    "missing_values": {
+      "accounts": {
+        "ACCOUNT_ID": 0,
+        "CUSTOMER_ID": 0,
+        "INIT_BALANCE": 0,
+        "COUNTRY": 0,
+        "ACCOUNT_TYPE": 0,
+        "IS_FRAUD": 0,
+        "TX_BEHAVIOR_ID": 0
+      },
+      "transactions": {
+        "TX_ID": 0,
+        "SENDER_ACCOUNT_ID": 0,
+        "RECEIVER_ACCOUNT_ID": 0,
+        "TX_TYPE": 0,
+        "TX_AMOUNT": 0,
+        "TIMESTAMP": 0,
+        "IS_FRAUD": 0,
+        "ALERT_ID": 0
+      }
+    },
+    "duplicates": {
+      "account_id_duplicates": 0,
+      "transaction_id_duplicates_within_chunks": 0
+    },
+    "licensing": "Apache-2.0 (IBM Research)",
+    "suitable_ml_tasks": [
+      "Node Classification (Account-level AML/SAR detection)",
+      "Edge Classification (Transaction-level AML detection)",
+      "Graph Classification / Subgraph Typology Detection (Cycle, Fan-in, Fan-out, Scatter-Gather)",
+      "Dynamic/Temporal Link Prediction"
+    ]
+  },
+  "amlsim_1mv_100me": {
+    "dataset_name": "IBM AMLSim amlsim_1mv_100me",
+    "publisher_source": "IBM Research AMLSim Agent-Based Financial Crime Simulation",
+    "local_location": "./1Mvertices-100Medges",
+    "file_names": [
+      "accounts.csv",
+      "alerts.csv",
+      "transactions.csv"
+    ],
+    "file_formats": [
+      "CSV",
+      "JSON",
+      "Properties"
+    ],
+    "dataset_size_bytes": 6512105117,
+    "dataset_size_human": "6210.43 MB",
+    "num_transactions": 124703184,
+    "num_accounts": 1000000,
+    "num_graph_nodes": 1000000,
+    "num_graph_edges": 124703184,
+    "label_distribution": {
+      "account_normal": 828545,
+      "account_suspicious": 171455,
+      "account_fraud_ratio": 0.171455,
+      "transaction_normal": 124540247,
+      "transaction_suspicious": 162937,
+      "transaction_fraud_ratio": 0.001307
+    },
+    "alerts_count": 162937,
+    "alerts_suspicious": 162937,
+    "alerts_distribution": {
+      "cycle": 90388,
+      "fan_in": 72549
+    },
+    "timestamp_availability": {
+      "min_timestamp_step": 0.0,
+      "max_timestamp_step": 0.0,
+      "time_steps_span": 1.0
+    },
+    "source_currency": "USD (AMLSim simulation base default currency)",
+    "account_attributes": [
+      "ACCOUNT_ID",
+      "CUSTOMER_ID",
+      "INIT_BALANCE",
+      "COUNTRY",
+      "ACCOUNT_TYPE",
+      "IS_FRAUD",
+      "TX_BEHAVIOR_ID"
+    ],
+    "transaction_attributes": [
+      "TX_ID",
+      "SENDER_ACCOUNT_ID",
+      "RECEIVER_ACCOUNT_ID",
+      "TX_TYPE",
+      "TX_AMOUNT",
+      "TIMESTAMP",
+      "IS_FRAUD",
+      "ALERT_ID"
+    ],
+    "missing_values": {
+      "accounts": {
+        "ACCOUNT_ID": 0,
+        "CUSTOMER_ID": 0,
+        "INIT_BALANCE": 0,
+        "COUNTRY": 0,
+        "ACCOUNT_TYPE": 0,
+        "IS_FRAUD": 0,
+        "TX_BEHAVIOR_ID": 0
+      },
+      "transactions": {
+        "TX_ID": 0,
+        "SENDER_ACCOUNT_ID": 0,
+        "RECEIVER_ACCOUNT_ID": 0,
+        "TX_TYPE": 0,
+        "TX_AMOUNT": 0,
+        "TIMESTAMP": 0,
+        "IS_FRAUD": 0,
+        "ALERT_ID": 0
+      }
+    },
+    "duplicates": {
+      "account_id_duplicates": 0,
+      "transaction_id_duplicates_within_chunks": 0
+    },
+    "licensing": "Apache-2.0 (IBM Research)",
+    "suitable_ml_tasks": [
+      "Node Classification (Account-level AML/SAR detection)",
+      "Edge Classification (Transaction-level AML detection)",
+      "Graph Classification / Subgraph Typology Detection (Cycle, Fan-in, Fan-out, Scatter-Gather)",
+      "Dynamic/Temporal Link Prediction"
+    ]
+  },
+  "amlsim_banks_v2_1": {
+    "dataset_name": "IBM AMLSim Multi-Bank Network v2.1",
+    "publisher_source": "IBM Research AMLSim Multi-Bank Federated / Bank-to-Bank Network",
+    "local_location": "./banks/v2.1",
+    "file_names": [
+      ".DS_Store",
+      "README.md",
+      "features/bank_b/model_accuracy.png",
+      "features/bank_b/features.csv.gz",
+      "features/bank_b/features_dist/count_dist.png",
+      "features/bank_b/features_dist/sg_max_amount_dist.png",
+      "features/bank_b/features_dist/u_amount_min_dist.png",
+      "features/bank_b/features_dist/gs_sum_amount_dist.png",
+      "features/bank_b/features_dist/gs_max_amount_dist.png",
+      "features/bank_b/features_dist/sg_sum_amount_dist.png",
+      "features/bank_b/features_dist/gs_all_amount_ratio_dist.png",
+      "features/bank_b/features_dist/ego1_num_dist.png",
+      "features/bank_b/features_dist/out_count_dist.png",
+      "features/bank_b/features_dist/min_interval_dist.png",
+      "features/bank_b/features_dist/sg_all_date_diff_dist.png",
+      "features/bank_b/features_dist/sg_amount_ordered_dist.png",
+      "features/bank_b/features_dist/avg_out_amount_dist.png",
+      "features/bank_b/features_dist/sg_depth_dist.png",
+      "features/bank_b/features_dist/sum_out_amount_dist.png",
+      "features/bank_b/features_dist/gs_all_date_diff_dist.png"
+    ],
+    "file_formats": [
+      "CSV.GZ",
+      "TGZ",
+      "PNG",
+      "JSON",
+      "Properties"
+    ],
+    "dataset_size_bytes": 24995563,
+    "dataset_size_human": "23.84 MB",
+    "num_accounts": 100000,
+    "num_transactions": "Multi-bank transaction streams (~1M - 10M edges across banks)",
+    "num_graph_nodes": 100000,
+    "source_currency": "USD (AMLSim simulation base default currency)",
+    "account_attributes": [
+      "acct_id",
+      "dsply_nm",
+      "type",
+      "acct_stat",
+      "acct_rptng_crncy",
+      "prior_sar_count",
+      "branch_id",
+      "open_dt",
+      "close_dt",
+      "initial_deposit",
+      "tx_behavior_id",
+      "bank_id",
+      "first_name",
+      "last_name",
+      "street_addr",
+      "city",
+      "state",
+      "country",
+      "zip",
+      "gender",
+      "birth_date",
+      "ssn",
+      "lon",
+      "lat"
+    ],
+    "licensing": "Apache-2.0 (IBM Research)",
+    "suitable_ml_tasks": [
+      "Federated Graph Learning",
+      "Multi-Bank Inter-Entity Transfer Graph Analysis",
+      "Complex SAR Typology Detection (Scatter-Gather, Gathering-Scattering, Bipartite Matching)"
+    ]
+  },
+  "amlsim_banks_v1_3": {
+    "dataset_name": "IBM AMLSim Multi-Bank Network v1.3",
+    "publisher_source": "IBM Research AMLSim Multi-Bank Federated / Bank-to-Bank Network",
+    "local_location": "./banks/v1.3",
+    "file_names": [
+      ".DS_Store",
+      "features/bank_separated_features.bank_b.csv.gz",
+      "features/bank_mixed_features.bank_a.csv.gz",
+      "features/bank_mixed_features.bank_c.csv.gz",
+      "features/bank_separated_features.csv.gz",
+      "features/bank_separated_features.bank_c.csv.gz",
+      "features/bank_mixed_features.bank_b.csv.gz",
+      "features/bank_separated_features.bank_a.csv.gz",
+      "features/bank_mixed_features.csv.gz",
+      "features/bank_separated_dist/count_dist.png",
+      "features/bank_separated_dist/u_amount_min_dist.png",
+      "features/bank_separated_dist/ego1_num_dist.png",
+      "features/bank_separated_dist/out_count_dist.png",
+      "features/bank_separated_dist/min_interval_dist.png",
+      "features/bank_separated_dist/avg_out_amount_dist.png",
+      "features/bank_separated_dist/sum_out_amount_dist.png",
+      "features/bank_separated_dist/in_count_dist.png",
+      "features/bank_separated_dist/max_in_amount_dist.png",
+      "features/bank_separated_dist/u_amount_avg_dist.png",
+      "features/bank_separated_dist/u_date_order_dist.png"
+    ],
+    "file_formats": [
+      "CSV.GZ",
+      "TGZ",
+      "PNG",
+      "JSON",
+      "Properties"
+    ],
+    "dataset_size_bytes": 152420244,
+    "dataset_size_human": "145.36 MB",
+    "num_accounts": 100000,
+    "num_transactions": "Multi-bank transaction streams (~1M - 10M edges across banks)",
+    "num_graph_nodes": 100000,
+    "source_currency": "USD (AMLSim simulation base default currency)",
+    "account_attributes": [
+      "ACCOUNT_ID",
+      "CUSTOMER_ID",
+      "INIT_BALANCE",
+      "COUNTRY",
+      "ACCOUNT_TYPE",
+      "IS_FRAUD"
+    ],
+    "licensing": "Apache-2.0 (IBM Research)",
+    "suitable_ml_tasks": [
+      "Federated Graph Learning",
+      "Multi-Bank Inter-Entity Transfer Graph Analysis",
+      "Complex SAR Typology Detection (Scatter-Gather, Gathering-Scattering, Bipartite Matching)"
+    ]
+  }
+}

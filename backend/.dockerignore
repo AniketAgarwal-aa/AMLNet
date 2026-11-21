@@ -13,5 +13,8 @@ artifacts/
 data/*.csv
 data/*.json
 research_data/
-research/
+research/checkpoints/
+research/*.db
+research/*.sqlite*
+research/**/__pycache__/
 .DS_Store
