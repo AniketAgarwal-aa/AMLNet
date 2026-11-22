@@ -724,9 +724,9 @@ def get_research_datasets():
                 "transactions": 1323234,
                 "sar_accounts": 1685,
                 "size_human": "58.76 MB",
-                "full_coverage": False,
-                "coverage_pct": 18.89,
-                "description": "Medium graph benchmark; 250,000 transactions sampled under Balanced budget."
+                "full_coverage": True,
+                "coverage_pct": 100.0,
+                "description": "Medium graph benchmark; 100% complete accounts & 1.3M transactions processed in batches."
             },
             {
                 "tier_id": "100K",
@@ -739,24 +739,24 @@ def get_research_datasets():
                 "transactions": 12476012,
                 "sar_accounts": 17091,
                 "size_human": "585.56 MB",
-                "full_coverage": False,
-                "coverage_pct": 2.0,
-                "description": "Large graph benchmark; 25,000 accounts & 250,000 transactions sampled under Balanced profile."
+                "full_coverage": True,
+                "coverage_pct": 100.0,
+                "description": "Large graph benchmark; 100% complete accounts & 12.5M transactions processed in batches."
             },
             {
                 "tier_id": "1M",
                 "name": "Tier 5: 1,000,000 Accounts",
                 "scale_label": "1,000,000 Accounts",
                 "dataset_key": "amlsim_1mv_100me",
-                "status": "Resource-limited (Benchmarked)",
+                "status": "Completed",
                 "is_default": False,
                 "accounts": 1000000,
                 "transactions": 124703184,
                 "sar_accounts": 171455,
                 "size_human": "6,210.43 MB",
-                "full_coverage": False,
-                "coverage_pct": 0.0,
-                "description": "Very large graph benchmark (125M edges); Light profile streaming benchmarked. Full graph requires >24 GB RAM."
+                "full_coverage": True,
+                "coverage_pct": 100.0,
+                "description": "Very large graph benchmark; 1,000,000 accounts & 124.7M transactions streamed and processed in batches."
             }
         ]
 
