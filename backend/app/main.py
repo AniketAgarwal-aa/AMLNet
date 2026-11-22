@@ -410,12 +410,16 @@ def graph(
         if g.get('nodes'):
             return g
 
-    q = db.query(Account)
     if risk_level:
-        q = q.filter(Account.risk_level == risk_level)
-    nodes = q.all()
-    ids = {a.id for a in nodes}
-    tx = [t for t in db.query(Transaction).limit(limit).all() if t.source_id in ids and t.target_id in ids]
+        tx = db.query(Transaction).join(
+            Account, or_(Transaction.source_id == Account.id, Transaction.target_id == Account.id)
+        ).filter(Account.risk_level == risk_level).limit(limit).all()
+        connected_ids = {t.source_id for t in tx} | {t.target_id for t in tx}
+        nodes = db.query(Account).filter(Account.id.in_(connected_ids)).all() if connected_ids else db.query(Account).filter(Account.risk_level == risk_level).limit(limit).all()
+    else:
+        tx = db.query(Transaction).limit(limit).all()
+        connected_ids = {t.source_id for t in tx} | {t.target_id for t in tx}
+        nodes = db.query(Account).filter(Account.id.in_(connected_ids)).all() if connected_ids else db.query(Account).limit(limit).all()
 
     return {
         'nodes': [{

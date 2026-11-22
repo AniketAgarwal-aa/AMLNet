@@ -192,51 +192,143 @@ def get_investigation_graph(
         return {"nodes": [], "edges": []}
     with _get_conn(db_path) as conn:
         c = conn.cursor()
-        acc_query = "SELECT * FROM investigation_accounts WHERE tier = ?"
-        params: List[Any] = [tier]
+        seed_nodes = set()
+
         if risk_level:
-            acc_query += " AND risk_level = ?"
-            params.append(risk_level)
-        acc_query += " ORDER BY risk_score DESC LIMIT ?"
-        params.append(limit)
-        c.execute(acc_query, params)
-        nodes = [dict(r) for r in c.fetchall()]
-        acc_ids = {n["account_id"] for n in nodes}
+            c.execute("""
+                SELECT account_id FROM investigation_accounts 
+                WHERE tier = ? AND risk_level = ? 
+                ORDER BY risk_score DESC LIMIT 30
+            """, (tier, risk_level))
+            for r in c.fetchall():
+                seed_nodes.add(str(r[0]))
+        else:
+            # Seed from fraud / suspicious transactions first
+            c.execute("""
+                SELECT source_id, target_id FROM investigation_transactions 
+                WHERE tier = ? AND is_fraud = 1 
+                ORDER BY amount DESC LIMIT 30
+            """, (tier,))
+            for s, t in c.fetchall():
+                seed_nodes.add(str(s))
+                seed_nodes.add(str(t))
 
-        if not acc_ids:
-            return {"nodes": [], "edges": []}
+            # Also seed from highest risk accounts
+            c.execute("""
+                SELECT account_id FROM investigation_accounts 
+                WHERE tier = ? 
+                ORDER BY risk_score DESC LIMIT 20
+            """, (tier,))
+            for r in c.fetchall():
+                seed_nodes.add(str(r[0]))
 
-        # Fetch connecting transactions
-        placeholders = ",".join("?" for _ in acc_ids)
-        c.execute(f"""
-            SELECT * FROM investigation_transactions 
-            WHERE tier = ? AND source_id IN ({placeholders}) AND target_id IN ({placeholders})
-            LIMIT ?
-        """, [tier, *list(acc_ids), *list(acc_ids), limit * 2])
-        edges = [dict(r) for r in c.fetchall()]
+        if not seed_nodes:
+            c.execute("""
+                SELECT source_id, target_id FROM investigation_transactions 
+                WHERE tier = ? ORDER BY amount DESC LIMIT 25
+            """, (tier,))
+            for s, t in c.fetchall():
+                seed_nodes.add(str(s))
+                seed_nodes.add(str(t))
+
+        selected_txs = []
+        seen_tx_ids = set()
+
+        # 1. Fetch transactions directly touching seed nodes
+        if seed_nodes:
+            ph = ",".join("?" for _ in seed_nodes)
+            c.execute(f"""
+                SELECT tx_id, source_id, target_id, amount, tx_type, timestamp, is_fraud
+                FROM investigation_transactions
+                WHERE tier = ? AND (source_id IN ({ph}) OR target_id IN ({ph}))
+                ORDER BY is_fraud DESC, amount DESC
+                LIMIT ?
+            """, [tier, *list(seed_nodes), *list(seed_nodes), limit])
+            for r in c.fetchall():
+                tx = dict(r)
+                seen_tx_ids.add(tx["tx_id"])
+                selected_txs.append(tx)
+
+        # 2. Extract node IDs from selected transactions
+        all_nodes = set()
+        for tx in selected_txs:
+            all_nodes.add(str(tx["source_id"]))
+            all_nodes.add(str(tx["target_id"]))
+
+        # 3. Inter-connect: find transactions between all_nodes to add graph density
+        if all_nodes and len(selected_txs) < limit:
+            remaining = limit - len(selected_txs)
+            ph2 = ",".join("?" for _ in all_nodes)
+            c.execute(f"""
+                SELECT tx_id, source_id, target_id, amount, tx_type, timestamp, is_fraud
+                FROM investigation_transactions
+                WHERE tier = ? AND source_id IN ({ph2}) AND target_id IN ({ph2})
+                ORDER BY amount DESC
+                LIMIT ?
+            """, [tier, *list(all_nodes), *list(all_nodes), remaining])
+            for r in c.fetchall():
+                tx = dict(r)
+                if tx["tx_id"] not in seen_tx_ids:
+                    seen_tx_ids.add(tx["tx_id"])
+                    selected_txs.append(tx)
+
+        # Re-extract all node IDs to guarantee complete endpoint coverage (no orphan edges)
+        final_nodes = set()
+        for tx in selected_txs:
+            final_nodes.add(str(tx["source_id"]))
+            final_nodes.add(str(tx["target_id"]))
+
+        # 4. Fetch account records for all involved nodes
+        acc_map = {}
+        if final_nodes:
+            ph3 = ",".join("?" for _ in final_nodes)
+            c.execute(f"""
+                SELECT account_id, risk_score, risk_level, is_fraud, incoming_count, outgoing_count
+                FROM investigation_accounts
+                WHERE tier = ? AND account_id IN ({ph3})
+            """, [tier, *list(final_nodes)])
+            for r in c.fetchall():
+                acc_map[str(r[0])] = dict(r)
+
+    nodes_out = []
+    for aid in final_nodes:
+        if aid in acc_map:
+            a = acc_map[aid]
+            r_score = a["risk_score"]
+            r_level = a["risk_level"]
+            is_f = a["is_fraud"]
+        else:
+            r_score = 0.15
+            r_level = "Low"
+            is_f = 0
+        nodes_out.append({
+            "data": {
+                "id": str(aid),
+                "label": f"ACC-{aid}",
+                "risk": r_score,
+                "risk_level": r_level,
+                "gnn_prob": round(r_score * 100, 1),
+                "rule_score": int(r_score * 85),
+                "is_fraud": is_f
+            }
+        })
+
+    edges_out = [{
+        "data": {
+            "id": f"tx-{t['tx_id']}",
+            "source": str(t["source_id"]),
+            "target": str(t["target_id"]),
+            "amount": t["amount"],
+            "timestamp": str(t["timestamp"]),
+            "transaction_type": t["tx_type"],
+            "scenario": t.get("tx_type", "transfer"),
+            "is_fraud": t["is_fraud"]
+        }
+    } for t in selected_txs]
 
     return {
-        "nodes": [{
-            "data": {
-                "id": str(a["account_id"]),
-                "label": f"ACC-{a['account_id']}",
-                "risk": a["risk_score"],
-                "risk_level": a["risk_level"],
-                "gnn_prob": round(a["risk_score"] * 100, 1),
-                "is_fraud": a["is_fraud"]
-            }
-        } for a in nodes],
-        "edges": [{
-            "data": {
-                "id": f"tx-{t['tx_id']}",
-                "source": str(t["source_id"]),
-                "target": str(t["target_id"]),
-                "amount": t["amount"],
-                "timestamp": str(t["timestamp"]),
-                "transaction_type": t["tx_type"],
-                "is_fraud": t["is_fraud"]
-            }
-        } for t in edges],
+        "nodes": nodes_out,
+        "edges": edges_out,
         "tier": tier
     }
 
@@ -253,59 +345,73 @@ def get_investigation_subgraph(
         c = conn.cursor()
         current_ids = {str(account_id)}
         collected_tx = []
+        seen_tx = set()
 
         for _ in range(max(1, min(hops, 2))):
             placeholders = ",".join("?" for _ in current_ids)
             c.execute(f"""
-                SELECT * FROM investigation_transactions
+                SELECT tx_id, source_id, target_id, amount, tx_type, timestamp, is_fraud
+                FROM investigation_transactions
                 WHERE tier = ? AND (source_id IN ({placeholders}) OR target_id IN ({placeholders}))
                 LIMIT ?
             """, [tier, *list(current_ids), *list(current_ids), limit])
             step_tx = [dict(r) for r in c.fetchall()]
-            collected_tx.extend(step_tx)
             for t in step_tx:
-                current_ids.add(str(t["source_id"]))
-                current_ids.add(str(t["target_id"]))
+                if t["tx_id"] not in seen_tx:
+                    seen_tx.add(t["tx_id"])
+                    collected_tx.append(t)
+                    current_ids.add(str(t["source_id"]))
+                    current_ids.add(str(t["target_id"]))
 
         placeholders = ",".join("?" for _ in current_ids)
         c.execute(f"SELECT * FROM investigation_accounts WHERE tier = ? AND account_id IN ({placeholders})", [tier, *list(current_ids)])
         acc_rows = [dict(r) for r in c.fetchall()]
         acc_dict = {str(a["account_id"]): a for a in acc_rows}
 
-    if str(account_id) not in acc_dict:
+    # If neither transactions found nor root account exists in tier, return empty
+    if str(account_id) not in current_ids and str(account_id) not in acc_dict and not collected_tx:
         return {"nodes": [], "edges": []}
 
-    # Dedup edges
-    seen_tx = set()
-    dedup_tx = []
-    for t in collected_tx:
-        if t["tx_id"] not in seen_tx:
-            seen_tx.add(t["tx_id"])
-            dedup_tx.append(t)
+    nodes_out = []
+    for aid in current_ids:
+        if aid in acc_dict:
+            a = acc_dict[aid]
+            r_score = a.get("risk_score", 0.1)
+            r_level = a.get("risk_level", "Low")
+            is_f = a.get("is_fraud", 0)
+        else:
+            r_score = 0.15
+            r_level = "Low"
+            is_f = 0
+        nodes_out.append({
+            "data": {
+                "id": str(aid),
+                "label": f"ACC-{aid}",
+                "risk": r_score,
+                "risk_level": r_level,
+                "gnn_prob": round(r_score * 100, 1),
+                "rule_score": int(r_score * 85),
+                "is_fraud": is_f,
+                "is_root": str(aid) == str(account_id)
+            }
+        })
+
+    edges_out = [{
+        "data": {
+            "id": f"tx-{t['tx_id']}",
+            "source": str(t["source_id"]),
+            "target": str(t["target_id"]),
+            "amount": t["amount"],
+            "timestamp": str(t["timestamp"]),
+            "transaction_type": t["tx_type"],
+            "scenario": t.get("tx_type", "transfer"),
+            "is_fraud": t["is_fraud"]
+        }
+    } for t in collected_tx]
 
     return {
-        "nodes": [{
-            "data": {
-                "id": str(a["account_id"]),
-                "label": f"ACC-{a['account_id']}",
-                "risk": a.get("risk_score", 0.1),
-                "risk_level": a.get("risk_level", "Low"),
-                "gnn_prob": round(a.get("risk_score", 0.1) * 100, 1),
-                "is_fraud": a.get("is_fraud", 0),
-                "is_root": str(a["account_id"]) == str(account_id)
-            }
-        } for a in acc_rows],
-        "edges": [{
-            "data": {
-                "id": f"tx-{t['tx_id']}",
-                "source": str(t["source_id"]),
-                "target": str(t["target_id"]),
-                "amount": t["amount"],
-                "timestamp": str(t["timestamp"]),
-                "transaction_type": t["tx_type"],
-                "is_fraud": t["is_fraud"]
-            }
-        } for t in dedup_tx],
+        "nodes": nodes_out,
+        "edges": edges_out,
         "root_account": str(account_id),
         "tier": tier
     }

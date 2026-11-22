@@ -84,31 +84,51 @@ export default function GraphExplorer() {
           style: {
             label: 'data(label)',
             'font-size': 9,
-            color: '#e2ecfc',
-            'text-valign': 'center',
-            'text-halign': 'center',
+            'font-weight': '600',
+            color: '#cbd5e1',
+            'text-valign': 'bottom',
+            'text-margin-y': 5,
+            'text-background-opacity': 0.8,
+            'text-background-color': '#0b1120',
+            'text-background-padding': '2px',
+            'text-background-shape': 'roundrectangle',
             'background-color': (ele) => {
+              if (ele.data('is_root')) return '#38bdf8';
               const r = ele.data('risk_level');
               if (r === 'Critical') return '#ef4444';
               if (r === 'High') return '#f97316';
               if (r === 'Medium') return '#f59e0b';
               return '#10b981';
             },
-            width: (ele) => (ele.data('is_root') ? 38 : 20 + (ele.data('risk') || 0) / 8),
-            height: (ele) => (ele.data('is_root') ? 38 : 20 + (ele.data('risk') || 0) / 8),
-            'border-width': (ele) => (ele.data('is_root') ? 3 : 1),
-            'border-color': (ele) => (ele.data('is_root') ? '#00c2b2' : '#1e293b')
+            width: (ele) => (ele.data('is_root') ? 34 : 20 + Math.min(18, (ele.data('risk') || 0.1) * 20)),
+            height: (ele) => (ele.data('is_root') ? 34 : 20 + Math.min(18, (ele.data('risk') || 0.1) * 20)),
+            'border-width': (ele) => (ele.data('is_root') ? 3 : 1.5),
+            'border-color': (ele) => (ele.data('is_root') ? '#ffffff' : '#1e293b'),
+            'shadow-blur': (ele) => (ele.data('risk_level') === 'Critical' ? 12 : 0),
+            'shadow-color': 'rgba(239, 68, 68, 0.5)',
+            'shadow-opacity': 0.8
           }
         },
         {
           selector: 'edge',
           style: {
-            width: (ele) => Math.max(1.5, Math.min(8, (ele.data('amount') || 1000) / 8000)),
-            'line-color': '#334155',
-            'target-arrow-color': '#00c2b2',
+            width: (ele) => Math.max(1.8, Math.min(6, (ele.data('amount') || 1000) / 4000)),
+            'line-color': (ele) => (ele.data('is_fraud') ? '#ef4444' : '#475569'),
+            'target-arrow-color': (ele) => (ele.data('is_fraud') ? '#ef4444' : '#00c2b2'),
             'target-arrow-shape': 'triangle',
+            'arrow-scale': 1.15,
             'curve-style': 'bezier',
-            opacity: 0.65
+            opacity: 0.75
+          }
+        },
+        {
+          selector: 'edge[?is_fraud]',
+          style: {
+            'line-color': '#ef4444',
+            'target-arrow-color': '#ef4444',
+            width: 3.5,
+            opacity: 0.95,
+            'z-index': 10
           }
         },
         {
@@ -116,18 +136,21 @@ export default function GraphExplorer() {
           style: {
             'border-width': 3,
             'border-color': '#38bdf8',
-            'line-color': '#00c2b2',
+            'line-color': '#38bdf8',
+            'target-arrow-color': '#38bdf8',
             opacity: 1
           }
         }
       ],
       layout: {
         name: isNeighborhood ? 'concentric' : 'cose',
-        animate: false,
-        nodeRepulsion: 18000,
-        idealEdgeLength: 140,
+        animate: true,
+        animationDuration: 400,
+        nodeRepulsion: 12000,
+        idealEdgeLength: 110,
         edgeElasticity: 100,
-        gravity: 0.25,
+        gravity: 0.35,
+        numIter: 350,
         padding: 40
       }
     });
