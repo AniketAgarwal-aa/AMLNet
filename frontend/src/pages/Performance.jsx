@@ -163,7 +163,7 @@ export default function Performance() {
           <div className="panel" style={{ marginTop: 20 }}>
             <div className="panel-header">
               <h2 className="panel-title">6-Architecture Benchmark Leaderboard ({selectedTier})</h2>
-              <span className="panel-subtitle">Measured on Apple Silicon M2 under strict memory budget</span>
+              <span className="panel-subtitle">Empirical benchmark on holdout test splits under memory-bounded resource targets</span>
             </div>
             <div className="table-responsive">
               <table className="data-table">

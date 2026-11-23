@@ -1,4 +1,6 @@
-const BASE = import.meta.env.VITE_API_BASE_URL || (import.meta.env.DEV ? 'http://localhost:8000/api' : '/api');
+const PROD_API_URL = 'https://amlnet-api.onrender.com/api';
+const isLocalhost = typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+const BASE = import.meta.env.VITE_API_BASE_URL || (import.meta.env.DEV || isLocalhost ? 'http://localhost:8000/api' : PROD_API_URL);
 
 export function getSessionToken() {
   return localStorage.getItem('amlnet_session_token') || '';
@@ -25,7 +27,7 @@ export function setAdminKey(key) {
 }
 
 export async function api(path, opts = {}) {
-  const timeoutMs = opts.timeoutMs || 15000;
+  const timeoutMs = opts.timeoutMs || 30000;
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
 

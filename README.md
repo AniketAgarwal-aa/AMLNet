@@ -3,22 +3,24 @@
 [![Backend Test Suite](https://img.shields.io/badge/pytest-16%20passed-emerald)](https://github.com/AniketAgarwal-aa/AMLNet)
 [![Frontend Verification](https://img.shields.io/badge/frontend%20tests-5%20passed-blue)](https://github.com/AniketAgarwal-aa/AMLNet)
 [![Hugging Face Models](https://img.shields.io/badge/Hugging%20Face-30%20Models%20Published-yellow)](https://huggingface.co/AniketAgarwal-aa/AMLNet-Research)
+[![Kaggle Models](https://img.shields.io/badge/Kaggle-Models%20Published-20beff)](https://www.kaggle.com/models/aniketagarwal10aa/amlnet)
 [![Production Frontend](https://img.shields.io/badge/deployment-Vercel-black)](https://amlnet.vercel.app)
 [![Production API](https://img.shields.io/badge/backend-Render-indigo)](https://amlnet-api.onrender.com)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 **AMLNet 2.0** is an enterprise-grade financial crime detection and graph research platform. By modeling financial entities as graph nodes and fund transfers as directed, attributed edges, AMLNet bridges inductive Graph Neural Networks (GNNs) with explainable transaction typologies to identify sophisticated money laundering rings with calibrated precision.
 
-The platform provides a unified multi-tier architecture spanning five benchmark scales (**100**, **1,000**, **10,000**, **100,000**, and **1,000,000** accounts), real record-level investigation across every tier, an interactive ego-neighborhood graph explorer, Explainable AI (XAI) feature attribution, FIDO2 / WebAuthn cryptographic passkey authentication, and 30 cryptographically verified models published to Hugging Face.
+The platform provides a unified multi-tier architecture spanning five benchmark scales (**100**, **1,000**, **10,000**, **100,000**, and **1,000,000** accounts), real record-level investigation across every tier, an interactive ego-neighborhood graph explorer, Explainable AI (XAI) feature attribution, FIDO2 / WebAuthn cryptographic passkey authentication, and 30 cryptographically verified models published to Hugging Face and Kaggle Models.
 
 ---
 
-## Live Deployments
+## Live Deployments & Model Hubs
 
 - **Interactive Workstation (Frontend)**: [https://amlnet.vercel.app](https://amlnet.vercel.app)
 - **Production REST API (Backend)**: [https://amlnet-api.onrender.com](https://amlnet-api.onrender.com)
 - **Interactive Swagger Documentation**: [https://amlnet-api.onrender.com/docs](https://amlnet-api.onrender.com/docs)
 - **Hugging Face Model Hub**: [https://huggingface.co/AniketAgarwal-aa/AMLNet-Research](https://huggingface.co/AniketAgarwal-aa/AMLNet-Research)
+- **Kaggle Model Hub**: [https://www.kaggle.com/models/aniketagarwal10aa/amlnet](https://www.kaggle.com/models/aniketagarwal10aa/amlnet)
 
 ---
 
@@ -146,11 +148,26 @@ All 30 models (15 Graph Neural Networks + 15 Classical Baselines across all 5 ti
 
 ---
 
-## Hugging Face Model Hub & Standalone Inference
+## Dual Model Registries: Hugging Face & Kaggle Models
 
-All 30 model checkpoints, scalers, and reproducible evaluation manifests are published on Hugging Face:
-- **Repository Destination**: [`https://huggingface.co/AniketAgarwal-aa/AMLNet-Research`](https://huggingface.co/AniketAgarwal-aa/AMLNet-Research)
-- **Repository ID**: `AniketAgarwal-aa/AMLNet-Research`
+All 30 model checkpoints, leak-free preprocessing scalers, and reproducible evaluation manifests are published across two independent registries:
+
+1. **Hugging Face Hub**: [`https://huggingface.co/AniketAgarwal-aa/AMLNet-Research`](https://huggingface.co/AniketAgarwal-aa/AMLNet-Research)
+   - Repository ID: `AniketAgarwal-aa/AMLNet-Research`
+   - Complete weights, scalers, PyG inference modules, and JSON manifests.
+
+2. **Kaggle Model Registry**: [`https://www.kaggle.com/models/aniketagarwal10aa/amlnet`](https://www.kaggle.com/models/aniketagarwal10aa/amlnet)
+   - PyTorch GNNs: [`models/aniketagarwal10aa/amlnet/PyTorch/gnn-architectures`](https://www.kaggle.com/models/aniketagarwal10aa/amlnet/PyTorch/gnn-architectures)
+   - Scikit-Learn Baselines: [`models/aniketagarwal10aa/amlnet/ScikitLearn/tabular-baselines`](https://www.kaggle.com/models/aniketagarwal10aa/amlnet/ScikitLearn/tabular-baselines)
+
+### Download via Kaggle CLI
+```bash
+# Download PyTorch GNN Architectures
+kaggle models instances versions download aniketagarwal10aa/amlnet/pyTorch/gnn-architectures/1 --untar
+
+# Download Scikit-Learn Tabular Baselines
+kaggle models instances versions download aniketagarwal10aa/amlnet/scikitLearn/tabular-baselines/1 --untar
+```
 
 ### Standalone Inference Verification
 
@@ -240,7 +257,8 @@ npm run build
 | **Frontend Workstation** | Vercel | `https://amlnet.vercel.app` | `VITE_API_BASE_URL=https://amlnet-api.onrender.com` |
 | **API Backend** | Render | `https://amlnet-api.onrender.com` | `CORS_ORIGINS`, `DATABASE_URL`, `ADMIN_API_KEY` |
 | **Relational Database** | Neon PostgreSQL | Serverless PostgreSQL | `DATABASE_URL` (Encrypted Connection) |
-| **Model Repository** | Hugging Face Hub | `AniketAgarwal-aa/AMLNet-Research` | `HF_TOKEN` (Read/Write Scope) |
+| **Model Repository (HF)** | Hugging Face Hub | `AniketAgarwal-aa/AMLNet-Research` | `HF_TOKEN` (Read/Write Scope) |
+| **Model Repository (Kaggle)**| Kaggle Models | `aniketagarwal10aa/amlnet` | `KAGGLE_USERNAME`, `KAGGLE_KEY` |
 
 ---
 

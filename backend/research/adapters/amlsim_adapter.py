@@ -102,10 +102,8 @@ class IBMAMLSimAdapter(BaseDatasetAdapter):
 
         total_tx = 0
         total_fraud_tx = 0
-        fraud_edges = []
-        fraud_edge_amounts = []
-        normal_edges = []
-        normal_edge_amounts = []
+        sampled_edges = []
+        sampled_edge_amounts = []
 
         logger.info(f"Streaming transactions for {self.name} ({num_nodes:,} accounts) in chunks of {chunk_size:,}...")
 
@@ -147,22 +145,14 @@ class IBMAMLSimAdapter(BaseDatasetAdapter):
                 if r not in cp_dict: cp_dict[r] = set()
                 if len(cp_dict[r]) < 50: cp_dict[r].add(s)
 
-            # Preserve all fraud edges
-            if np.any(f_val):
-                for s, r, a in zip(s_val[f_val], r_val[f_val], a_val[f_val]):
-                    fraud_edges.append((s, r))
-                    fraud_edge_amounts.append(a)
-
-            # Reservoir sample normal edges up to max_graph_edges
-            if np.any(~f_val) and len(normal_edges) < max_graph_edges:
-                s_norm = s_val[~f_val]
-                r_norm = r_val[~f_val]
-                a_norm = a_val[~f_val]
-                step = max(1, len(s_norm) // 5000)
-                for s, r, a in zip(s_norm[::step], r_norm[::step], a_norm[::step]):
-                    if len(normal_edges) < max_graph_edges:
-                        normal_edges.append((s, r))
-                        normal_edge_amounts.append(a)
+            # Uniform streaming edge sampling up to max_graph_edges (100% label-agnostic)
+            # Sampling does NOT inspect IS_FRAUD, ensuring zero target leakage into topology
+            if len(s_val) > 0 and len(sampled_edges) < max_graph_edges:
+                step = max(1, len(s_val) // 5000)
+                for s, r, a in zip(s_val[::step], r_val[::step], a_val[::step]):
+                    if len(sampled_edges) < max_graph_edges:
+                        sampled_edges.append((s, r))
+                        sampled_edge_amounts.append(a)
 
             if total_tx % 5_000_000 == 0:
                 logger.info(f"Streamed {total_tx:,} transactions... (Fraud: {total_fraud_tx:,}, Peak RSS: {get_process_memory_mb():.1f} MB)")
@@ -179,8 +169,8 @@ class IBMAMLSimAdapter(BaseDatasetAdapter):
         raw_features[:, 8] = np.log1p(np.maximum(in_amounts, 0.0))
         raw_features[:, 9] = np.log1p(np.maximum(out_amounts, 0.0))
 
-        all_edges = fraud_edges + normal_edges
-        all_amounts = fraud_edge_amounts + normal_edge_amounts
+        all_edges = sampled_edges
+        all_amounts = sampled_edge_amounts
 
         edges_bidir = []
         attrs_bidir = []

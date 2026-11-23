@@ -277,8 +277,8 @@ export default function GraphExplorer() {
 
         <div className="graph-viewport" ref={containerRef}>
           <div className="graph-hud">
-            <button className="secondary" style={{ padding: '4px 8px' }} onClick={zoomIn}>➕</button>
-            <button className="secondary" style={{ padding: '4px 8px' }} onClick={zoomOut}>➖</button>
+            <button className="secondary" style={{ padding: '4px 10px', fontSize: 13, fontWeight: 700 }} onClick={zoomIn} title="Zoom In">+</button>
+            <button className="secondary" style={{ padding: '4px 10px', fontSize: 13, fontWeight: 700 }} onClick={zoomOut} title="Zoom Out">−</button>
             <button className="secondary" style={{ padding: '4px 8px' }} onClick={fitView}>Fit</button>
             <button className="secondary" style={{ padding: '4px 8px' }} onClick={resetLayout}>Reset</button>
           </div>

@@ -783,7 +783,7 @@ def get_benchmark_matrix():
 
 @app.get('/api/research/model-library')
 def get_research_model_library(tier: Optional[str] = None):
-    """Serve Hugging Face model repository manifest and verified model artifact inventory."""
+    """Serve Hugging Face and Kaggle model repository manifest and verified model artifact inventory."""
     import json
     dist_manifest = Path(__file__).resolve().parent.parent.parent / 'dist_hf' / 'model_manifest.json'
     local_manifest = Path(__file__).resolve().parent.parent / 'research' / 'published_benchmark_manifest.json'
@@ -813,6 +813,27 @@ def get_research_model_library(tier: Optional[str] = None):
             }
     else:
         raise HTTPException(404, 'Model library manifest not found')
+
+    # Augment with verified Hugging Face & Kaggle repository metadata
+    data['hf_repository'] = 'AniketAgarwal-aa/AMLNet-Research'
+    data['hf_url'] = 'https://huggingface.co/AniketAgarwal-aa/AMLNet-Research'
+    data['kaggle_model'] = 'aniketagarwal10aa/amlnet'
+    data['kaggle_url'] = 'https://www.kaggle.com/models/aniketagarwal10aa/amlnet'
+    data['kaggle_instances'] = {
+        'PyTorch': 'https://www.kaggle.com/models/aniketagarwal10aa/amlnet/PyTorch/gnn-architectures',
+        'ScikitLearn': 'https://www.kaggle.com/models/aniketagarwal10aa/amlnet/ScikitLearn/tabular-baselines'
+    }
+
+    for m in data.get('models', []):
+        m_name = m.get('model_name', '').lower()
+        is_gnn = any(g in m_name for g in ['gat', 'gcn', 'sage'])
+        framework = 'PyTorch' if is_gnn else 'ScikitLearn'
+        instance_slug = 'gnn-architectures' if is_gnn else 'tabular-baselines'
+        m['framework'] = framework
+        m['kaggle_framework'] = framework
+        m['kaggle_instance'] = instance_slug
+        m['kaggle_url'] = f"https://www.kaggle.com/models/aniketagarwal10aa/amlnet/{framework}/{instance_slug}"
+        m['hf_url'] = f"https://huggingface.co/AniketAgarwal-aa/AMLNet-Research"
 
     if tier and 'models' in data:
         data['models'] = [m for m in data['models'] if m.get('dataset_tier') == tier]

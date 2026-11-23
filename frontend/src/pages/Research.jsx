@@ -331,9 +331,9 @@ export default function Research() {
             </div>
 
             <div className="card">
-              <h3 className="card-title">Dataset Integrity & Hardware Resource Profile</h3>
+              <h3 className="card-title">Dataset Integrity & Resource Profile</h3>
               <p className="card-subtitle">
-                Apple Silicon M2 (8 GB Unified Memory) Bounded Execution
+                Memory-Bounded Streaming Engine (&lt;1 GB Container Target)
               </p>
               <div className="audit-detail-list">
                 <div className="audit-item">
@@ -362,7 +362,7 @@ export default function Research() {
                 </div>
                 <div className="audit-item">
                   <span className="item-label">Compute Device:</span>
-                  <span className="item-val">Apple Silicon M2 (MPS / CPU Fallback)</span>
+                  <span className="item-val">Accelerated Compute Engine (MPS / Vector SIMD Fallback)</span>
                 </div>
                 <div className="audit-item">
                   <span className="item-label">Memory Ceiling:</span>
@@ -660,7 +660,7 @@ export default function Research() {
 
             <div className="card" style={{ gridColumn: 'span 2' }}>
               <h3 className="card-title">Training Time & Peak RAM Footprint ({selectedTier})</h3>
-              <p className="card-subtitle">Hardware utilization measured on Apple Silicon M2 8GB</p>
+              <p className="card-subtitle">Execution telemetry measured under bounded memory ceilings</p>
               <div style={{ height: 280 }}>
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={chartData} margin={{ top: 10, right: 20, left: -10, bottom: 20 }}>
@@ -685,7 +685,7 @@ export default function Research() {
           <div className="dashboard-grid" style={{ marginTop: 16 }}>
             <div className="card">
               <h3 className="card-title">Cross-Tier F1 & Recall Scaling (100 to 1M)</h3>
-              <p className="card-subtitle">Demonstrating model quality scaling with graph scale</p>
+              <p className="card-subtitle">Empirical model quality scaling across benchmark graph scales</p>
               <div style={{ height: 280 }}>
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart data={scalingData} margin={{ top: 10, right: 20, left: -10, bottom: 20 }}>
@@ -702,7 +702,7 @@ export default function Research() {
 
             <div className="card">
               <h3 className="card-title">Hardware Memory Scaling Across All 5 Tiers</h3>
-              <p className="card-subtitle">Strict compliance with 8 GB RAM target limits</p>
+              <p className="card-subtitle">Peak memory utilization bounded under standard container budget</p>
               <div style={{ height: 280 }}>
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart data={scalingData} margin={{ top: 10, right: 20, left: -10, bottom: 20 }}>
@@ -797,21 +797,22 @@ export default function Research() {
         </div>
       )}
 
-      {/* TAB 6: HUGGING FACE MODEL LIBRARY */}
+      {/* TAB 6: MODEL REGISTRIES (HUGGING FACE & KAGGLE) */}
       {activeTab === 'library' && (
         <div className="tab-pane">
           <div className="card" style={{ marginTop: 16 }}>
             <div className="card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 16 }}>
               <div>
-                <h3 className="card-title" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  Hugging Face Model Repository
-                  <span className="badge highlight">AniketAgarwal-aa/AMLNet-Research</span>
+                <h3 className="card-title" style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                  Model Registries
+                  <span className="badge highlight">Hugging Face: AniketAgarwal-aa/AMLNet-Research</span>
+                  <span className="badge success">Kaggle: aniketagarwal10aa/amlnet</span>
                 </h3>
                 <p className="card-subtitle">
-                  Verified model checkpoints, leak-free scalers, and benchmark records for {selectedTier} tier.
+                  Verified model checkpoints, leak-free scalers, and benchmark records for {selectedTier} tier across dual model hubs.
                 </p>
               </div>
-              <div style={{ display: 'flex', gap: 12 }}>
+              <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
                 <a
                   href="https://huggingface.co/AniketAgarwal-aa/AMLNet-Research"
                   target="_blank"
@@ -819,19 +820,28 @@ export default function Research() {
                   className="btn btn-secondary"
                   style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 6 }}
                 >
-                  <span>↗</span> Open on Hugging Face
+                  <span>🤗</span> Hugging Face Hub
+                </a>
+                <a
+                  href="https://www.kaggle.com/models/aniketagarwal10aa/amlnet"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="btn btn-secondary"
+                  style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 6 }}
+                >
+                  <span>📊</span> Kaggle Models
                 </a>
               </div>
             </div>
 
             {/* Governance & Safety Alert */}
             <div className="alert-box" style={{ background: 'rgba(59, 130, 246, 0.08)', border: '1px solid rgba(59, 130, 246, 0.25)', borderRadius: 8, padding: '12px 16px', margin: '16px 0', fontSize: 13, lineHeight: 1.5 }}>
-              <strong>Governance & Isolation Boundary:</strong> Checkpoints are published strictly for academic benchmarking and algorithmic research. Models downloaded from Hugging Face run in read-only mode and are never automatically promoted to production without hardware-backed WebAuthn administrative approval.
+              <strong>Governance & Isolation Boundary:</strong> Checkpoints are published strictly for academic benchmarking and algorithmic research across Hugging Face and Kaggle. Downloaded models operate in isolated read-only execution modes and are never automatically promoted to production without hardware-backed WebAuthn administrative approval.
             </div>
 
             {libraryLoading ? (
               <div style={{ padding: 32, textAlign: 'center', color: '#94a3b8' }}>
-                Loading Hugging Face model manifest for {selectedTier}…
+                Loading model registry manifest for {selectedTier}…
               </div>
             ) : (
               <div>
@@ -840,13 +850,14 @@ export default function Research() {
                     <thead>
                       <tr>
                         <th>Architecture</th>
+                        <th>Framework</th>
                         <th>Publication Status</th>
                         <th>Test F1</th>
                         <th>Recall</th>
                         <th>Precision</th>
                         <th>ROC-AUC</th>
                         <th>Threshold</th>
-                        <th>Repository Path</th>
+                        <th>Registries</th>
                         <th>Checksum (SHA-256)</th>
                       </tr>
                     </thead>
@@ -856,6 +867,11 @@ export default function Research() {
                           <td>
                             <strong>{m.model_name.replace('_', ' ').toUpperCase()}</strong>
                             <div style={{ fontSize: 11, color: '#94a3b8' }}>{m.tier_name || selectedTier}</div>
+                          </td>
+                          <td>
+                            <span className="family-tag">
+                              {m.kaggle_framework || (m.model_name.includes('gat') || m.model_name.includes('gcn') || m.model_name.includes('sage') ? 'PyTorch' : 'ScikitLearn')}
+                            </span>
                           </td>
                           <td>
                             <span className={`badge ${m.publication_status?.startsWith('Published') ? 'success' : 'neutral'}`}>
@@ -868,11 +884,27 @@ export default function Research() {
                           <td>{(m.metrics?.roc_auc || 0).toFixed(4)}</td>
                           <td><code>{(m.threshold || 0.5).toFixed(4)}</code></td>
                           <td>
-                            {m.artifact_path ? (
-                              <code>{m.artifact_path}</code>
-                            ) : (
-                              <span style={{ color: '#94a3b8', fontSize: 12 }}>Metrics Only</span>
-                            )}
+                            <div style={{ display: 'flex', gap: 6 }}>
+                              <a
+                                href={m.hf_url || "https://huggingface.co/AniketAgarwal-aa/AMLNet-Research"}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                title="Hugging Face Artifact"
+                                style={{ color: '#38bdf8', textDecoration: 'none', fontSize: 11 }}
+                              >
+                                HF ↗
+                              </a>
+                              <span style={{ color: '#64748b' }}>|</span>
+                              <a
+                                href={m.kaggle_url || "https://www.kaggle.com/models/aniketagarwal10aa/amlnet"}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                title="Kaggle Model Instance"
+                                style={{ color: '#20beff', textDecoration: 'none', fontSize: 11 }}
+                              >
+                                Kaggle ↗
+                              </a>
+                            </div>
                           </td>
                           <td>
                             {m.sha256 ? (
@@ -892,13 +924,16 @@ export default function Research() {
                 {/* Reproducible Inference Walkthrough */}
                 <div style={{ marginTop: 24, padding: 16, background: '#0f172a', borderRadius: 8, border: '1px solid #1e293b' }}>
                   <h4 style={{ margin: '0 0 8px 0', fontSize: 14, color: '#e2e8f0' }}>
-                    Standalone Inference Verification (Python 3.11+ / PyG 2.6+)
+                    Standalone Inference & Verification Across Registries
                   </h4>
                   <pre style={{ margin: 0, padding: 12, background: '#020617', borderRadius: 6, fontSize: 12, color: '#38bdf8', overflowX: 'auto', fontFamily: 'monospace' }}>
-{`# 1. Clone Hugging Face model repository
+{`# Option A: Hugging Face Hub (git or huggingface_hub)
 # git clone https://huggingface.co/AniketAgarwal-aa/AMLNet-Research
 
-# 2. Run validated graph inference with leak-free decision threshold
+# Option B: Kaggle Models API
+# kaggle models instances versions download aniketagarwal10aa/amlnet/pyTorch/gnn-architectures/1 --untar
+
+# Standalone Python Verification (Python 3.11+ / PyG 2.6+)
 from inference.graph_inference import load_gnn_model, run_gnn_inference
 import torch
 

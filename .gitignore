@@ -43,3 +43,4 @@ backend/research/checkpoints/
 *.pt
 *.pth
 dist_hf/
+dist_kaggle/
