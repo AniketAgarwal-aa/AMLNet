@@ -900,10 +900,10 @@ def export_research_data(format: str = 'json'):
 # --- Biometric / WebAuthn Endpoints ---
 
 @app.get('/api/auth/webauthn/status')
-def auth_status(origin: Optional[str] = Header(default=None)):
+def auth_status(origin: Optional[str] = Header(default=None), referer: Optional[str] = Header(default=None)):
     st = get_auth_status()
     from .auth.webauthn import resolve_rp_id
-    st['relying_party_id'] = resolve_rp_id(origin)
+    st['relying_party_id'] = resolve_rp_id(origin, referer)
     return st
 
 @app.post('/api/auth/webauthn/register-options')

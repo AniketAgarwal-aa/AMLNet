@@ -1,7 +1,7 @@
 # AMLNet 2.0 — Graph Neural Network & Explainable AML Intelligence Platform
 
 [![Backend Test Suite](https://img.shields.io/badge/pytest-16%20passed-emerald)](https://github.com/AniketAgarwal-aa/AMLNet)
-[![Frontend Verification](https://img.shields.io/badge/frontend%20tests-5%20passed-blue)](https://github.com/AniketAgarwal-aa/AMLNet)
+[![Frontend Verification](https://img.shields.io/badge/frontend%20tests-6%20passed-blue)](https://github.com/AniketAgarwal-aa/AMLNet)
 [![Hugging Face Models](https://img.shields.io/badge/Hugging%20Face-30%20Models%20Published-yellow)](https://huggingface.co/AniketAgarwal-aa/AMLNet-Research)
 [![Kaggle Models](https://img.shields.io/badge/Kaggle-Models%20Published-20beff)](https://www.kaggle.com/models/aniketagarwal10aa/amlnet)
 [![Production Frontend](https://img.shields.io/badge/deployment-Vercel-black)](https://amlnet.vercel.app)
@@ -101,6 +101,8 @@ AMLNet evaluates financial networks across five standardized benchmark scales de
 | **10K** | Tier 3: Medium Graph | 10,000 | 1,323,234 | 1,685 (16.85%) | Bounded Sample | Completed & Verified |
 | **100K** | **Tier 4: Large Graph (DEFAULT)** | **100,000** | **12,476,012** | **17,091 (17.09%)** | **Stratified Partition** | **Flagship Benchmark** |
 | **1M** | Tier 5: Very Large Graph | 1,000,000 | 124,703,184 | 171,455 (17.15%) | Streaming Benchmark | Benchmarked & Published |
+
+> **Data Coverage & Topology Note**: 100% of all 138,637,107 source transactions were scanned and aggregated into entity feature matrices (counts, amounts, velocity, counterparty sets). GNN graph edge topologies are extracted using label-agnostic streaming reservoir sampling up to the target edge envelope, guaranteeing zero target-label leakage into graph structure. Full transaction feature aggregation does not imply retaining every individual transaction as an explicit GNN graph edge.
 
 ---
 

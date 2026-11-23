@@ -119,7 +119,7 @@ export default function Transactions() {
                   </tr>
                 </thead>
                 <tbody>
-                  {transactions.map((tx) => (
+                  {(transactions || []).map((tx) => (
                     <tr
                       key={tx.id}
                       className={selectedTx?.id === tx.id ? 'selected' : ''}

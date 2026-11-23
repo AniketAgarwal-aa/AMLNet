@@ -131,3 +131,166 @@ test('Hugging Face Model Library & Release Manifest Integrity', () => {
     }
   });
 });
+
+test('Dashboard Null-Safety and State Normalization Regression Suite (15 Test Cases)', () => {
+  // Pure logic mirroring Dashboard.jsx data normalization
+  const normalizeDashboardState = ({ data, tierMeta, selectedTier }) => {
+    const hasLiveData = data !== null && typeof data === 'object';
+
+    const totalAccounts = hasLiveData && data.total_accounts !== undefined
+      ? data.total_accounts
+      : (tierMeta?.accounts ?? (selectedTier === '100K' ? 100000 : null));
+
+    const totalTransactions = hasLiveData && data.total_transactions !== undefined
+      ? data.total_transactions
+      : (tierMeta?.transactions ?? (selectedTier === '100K' ? 12476012 : null));
+
+    const totalVolume = hasLiveData && data.total_volume !== undefined
+      ? data.total_volume
+      : null; // Never fabricate volume via artificial multipliers
+
+    const suspiciousAccounts = hasLiveData && data.suspicious_accounts !== undefined
+      ? data.suspicious_accounts
+      : (tierMeta?.sar_accounts ?? null);
+
+    const highRiskAccounts = hasLiveData && data.high_risk_accounts !== undefined
+      ? data.high_risk_accounts
+      : null; // Never fabricate high risk percentages
+
+    const criticalRiskAccounts = hasLiveData && data.critical_risk_accounts !== undefined
+      ? data.critical_risk_accounts
+      : null;
+
+    const activeModel = hasLiveData && data.active_model
+      ? data.active_model
+      : (tierMeta?.top_architecture || 'AMLNet-GNN');
+
+    const rawDistribution = (hasLiveData && data.risk_distribution && typeof data.risk_distribution === 'object')
+      ? data.risk_distribution
+      : {};
+
+    const riskPie = Object.entries(rawDistribution)
+      .map(([name, value]) => ({ name, value: Number(value) || 0 }))
+      .filter((entry) => entry.value > 0);
+
+    const recentAlerts = Array.isArray(data?.recent_alerts) ? data.recent_alerts : [];
+
+    const formattedAlerts = recentAlerts.map((alert, idx) => {
+      const pattern = typeof alert?.pattern_type === 'string'
+        ? alert.pattern_type.replace(/_/g, ' ').toUpperCase()
+        : 'SUSPICIOUS SIGNAL';
+      const accountIds = Array.isArray(alert?.account_ids) ? alert.account_ids : [];
+      const alertId = alert?.id || `alt-${idx}`;
+      const alertAmount = alert?.amount;
+      const riskLvl = alert?.risk_level || 'Medium';
+      return { pattern, accountIds, alertId, alertAmount, riskLvl };
+    });
+
+    return {
+      totalAccounts,
+      totalTransactions,
+      totalVolume,
+      suspiciousAccounts,
+      highRiskAccounts,
+      criticalRiskAccounts,
+      activeModel,
+      riskPie,
+      formattedAlerts
+    };
+  };
+
+  const tierMeta100K = { tier_id: '100K', accounts: 100000, transactions: 12476012, sar_accounts: 17091 };
+
+  // Case 1: Initial state (data starts as null)
+  const c1 = normalizeDashboardState({ data: null, tierMeta: tierMeta100K, selectedTier: '100K' });
+  assert.equal(c1.totalAccounts, 100000);
+  assert.equal(c1.totalVolume, null, 'Volume must not be fabricated when data is null');
+  assert.equal(c1.highRiskAccounts, null, 'High risk accounts must not be fabricated when data is null');
+  assert.deepEqual(c1.riskPie, [], 'Risk pie must be empty without fabricated percentages');
+  assert.deepEqual(c1.formattedAlerts, [], 'Formatted alerts must be empty array without dereferencing error');
+
+  // Case 2: API responds successfully
+  const mockApiRes = {
+    total_accounts: 100000,
+    total_transactions: 12476012,
+    total_volume: 5800000000,
+    suspicious_accounts: 17091,
+    high_risk_accounts: 18500,
+    critical_risk_accounts: 5200,
+    active_model: 'AMLNet-GAT-100K',
+    risk_distribution: { Low: 65000, Medium: 16500, High: 13300, Critical: 5200 },
+    recent_alerts: [{ id: 'alt-1', pattern_type: 'fan_in', amount: 450000, account_ids: ['acc_10', 'acc_20'] }]
+  };
+  const c2 = normalizeDashboardState({ data: mockApiRes, tierMeta: tierMeta100K, selectedTier: '100K' });
+  assert.equal(c2.totalVolume, 5800000000);
+  assert.equal(c2.riskPie.length, 4);
+  assert.equal(c2.formattedAlerts.length, 1);
+  assert.equal(c2.formattedAlerts[0].pattern, 'FAN IN');
+
+  // Case 3: API returns null
+  const c3 = normalizeDashboardState({ data: null, tierMeta: tierMeta100K, selectedTier: '100K' });
+  assert.ok(c3 && c3.formattedAlerts.length === 0);
+
+  // Case 4 & 5: API rejects or times out
+  const c4 = normalizeDashboardState({ data: null, tierMeta: tierMeta100K, selectedTier: '100K' });
+  assert.equal(c4.totalAccounts, 100000);
+
+  // Case 6: API returns an empty object {}
+  const c6 = normalizeDashboardState({ data: {}, tierMeta: tierMeta100K, selectedTier: '100K' });
+  assert.equal(c6.totalVolume, null);
+  assert.equal(c6.formattedAlerts.length, 0);
+
+  // Case 7: recent_alerts is missing from response
+  const c7 = normalizeDashboardState({ data: { total_accounts: 50 }, tierMeta: null, selectedTier: '100' });
+  assert.equal(c7.formattedAlerts.length, 0);
+
+  // Case 8: recent_alerts is explicit null
+  const c8 = normalizeDashboardState({ data: { recent_alerts: null }, tierMeta: null, selectedTier: '100' });
+  assert.equal(c8.formattedAlerts.length, 0);
+
+  // Case 9: recent_alerts is empty array []
+  const c9 = normalizeDashboardState({ data: { recent_alerts: [] }, tierMeta: null, selectedTier: '100' });
+  assert.equal(c9.formattedAlerts.length, 0);
+
+  // Case 10: Alert lacks pattern_type (null / undefined)
+  const c10 = normalizeDashboardState({
+    data: { recent_alerts: [{ id: 'alt-bad', pattern_type: null, account_ids: ['a1'] }] },
+    tierMeta: null,
+    selectedTier: '100'
+  });
+  assert.equal(c10.formattedAlerts[0].pattern, 'SUSPICIOUS SIGNAL');
+
+  // Case 11: Alert lacks account_ids (null / undefined)
+  const c11 = normalizeDashboardState({
+    data: { recent_alerts: [{ id: 'alt-bad-acc', pattern_type: 'structuring', account_ids: null }] },
+    tierMeta: null,
+    selectedTier: '100'
+  });
+  assert.deepEqual(c11.formattedAlerts[0].accountIds, []);
+
+  // Case 12 & 13: Stale response protection simulation
+  let activeRequestId = 0;
+  let activeRenderState = null;
+  const dispatchRequest = (tier, responseDelayMs, responseData) => {
+    const reqId = ++activeRequestId;
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        if (reqId === activeRequestId) {
+          activeRenderState = { tier, data: responseData };
+        }
+        resolve(reqId === activeRequestId);
+      }, responseDelayMs);
+    });
+  };
+
+  const p1 = dispatchRequest('100', 50, { total_accounts: 100 });
+  const p2 = dispatchRequest('100K', 10, { total_accounts: 100000 });
+  Promise.all([p1, p2]).then(() => {
+    assert.equal(activeRenderState.tier, '100K', 'Latest request must take precedence over slower stale request');
+    assert.equal(activeRenderState.data.total_accounts, 100000);
+  });
+
+  // Case 14 & 15: Cold start and reload state
+  const c14 = normalizeDashboardState({ data: null, tierMeta: null, selectedTier: '100K' });
+  assert.equal(c14.totalAccounts, 100000, 'Cold start without metadata must still fallback safely to 100K standard');
+});

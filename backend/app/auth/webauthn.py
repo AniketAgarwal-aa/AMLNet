@@ -29,17 +29,27 @@ RELYING_PARTY = {
     "id": os.getenv("WEBAUTHN_RP_ID", "localhost")
 }
 
-def resolve_rp_id(origin: Optional[str] = None) -> str:
-    """Resolve WebAuthn Relying Party ID based on request Origin or environment."""
+def resolve_rp_id(origin: Optional[str] = None, referer: Optional[str] = None) -> str:
+    """Resolve WebAuthn Relying Party ID based on request Origin, Referer, or environment."""
     env_rp = os.getenv("WEBAUTHN_RP_ID")
     if env_rp:
         return env_rp
-    if origin:
-        # If request came from Vercel deployment
-        if "amlnet.vercel.app" in origin or "vercel.app" in origin:
+    src = f"{origin or ''} {referer or ''}".lower()
+    if "amlnet.vercel.app" in src or "vercel.app" in src:
+        return "amlnet.vercel.app"
+    if "localhost" in src or "127.0.0.1" in src:
+        return "localhost"
+    
+    # Check configured CORS origins or production environment
+    try:
+        from ..config import CORS_ORIGINS, APP_ENV
+        for co in CORS_ORIGINS:
+            if "amlnet.vercel.app" in co:
+                return "amlnet.vercel.app"
+        if APP_ENV == "production":
             return "amlnet.vercel.app"
-        if "localhost" in origin or "127.0.0.1" in origin:
-            return "localhost"
+    except Exception:
+        pass
     return RELYING_PARTY.get("id", "localhost")
 
 def generate_registration_challenge(username: str = "investigator", origin: Optional[str] = None) -> Dict[str, Any]:

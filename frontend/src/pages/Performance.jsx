@@ -90,7 +90,7 @@ export default function Performance() {
             <div className="stat-card">
               <span className="stat-label">Top Architecture ({selectedTier})</span>
               <span className="stat-value text-highlight" style={{ fontSize: 20 }}>
-                {bestModel ? bestModel.model_name.replace('_', ' ').toUpperCase() : 'N/A'}
+                {bestModel?.model_name ? bestModel.model_name.replace(/_/g, ' ').toUpperCase() : 'N/A'}
               </span>
               <span className="stat-subtext">Optimal Validation Calibrated</span>
             </div>
@@ -182,13 +182,16 @@ export default function Performance() {
                   </tr>
                 </thead>
                 <tbody>
-                  {tierExperiments.map((exp) => {
-                    const m = exp.metrics || {};
+                  {(tierExperiments || []).map((exp) => {
+                    const m = exp?.metrics || {};
                     const isTop = bestModel?.id === exp.id;
+                    const modelTitle = typeof exp?.model_name === 'string'
+                      ? exp.model_name.replace(/_/g, ' ').toUpperCase()
+                      : 'MODEL';
                     return (
                       <tr key={exp.id} className={isTop ? 'best-row' : ''}>
                         <td>
-                          <strong>{exp.model_name.replace('_', ' ').toUpperCase()}</strong>
+                          <strong>{modelTitle}</strong>
                           {isTop && <span className="mini-badge-top">BEST</span>}
                         </td>
                         <td>{m.accuracy !== undefined ? Number(m.accuracy).toFixed(4) : 'N/A'}</td>

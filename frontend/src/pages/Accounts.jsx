@@ -133,20 +133,20 @@ export default function Accounts() {
                   </tr>
                 </thead>
                 <tbody>
-                  {accounts.map((acc) => (
+                  {(accounts || []).map((acc) => (
                     <tr
                       key={acc.id}
                       className={selectedAccount?.id === acc.id ? 'selected' : ''}
                       onClick={() => selectAccount(acc)}
                     >
                       <td className="mono" style={{ fontWeight: 600 }}>{acc.id}</td>
-                      <td className="mono">{(acc.gnn_probability * 100).toFixed(1)}%</td>
-                      <td className="mono">{acc.rule_score}</td>
+                      <td className="mono">{(Number(acc?.gnn_probability || 0) * 100).toFixed(1)}%</td>
+                      <td className="mono">{acc?.rule_score ?? 0}</td>
                       <td className="mono" style={{ fontWeight: 600 }}>
-                        {Number(acc.final_risk).toFixed(1)}
+                        {(Number(acc?.final_risk) || 0).toFixed(1)}
                       </td>
                       <td>
-                        <Badge level={acc.risk_level} />
+                        <Badge level={acc?.risk_level || 'Low'} />
                       </td>
                     </tr>
                   ))}
@@ -241,11 +241,11 @@ export default function Accounts() {
                   {(explanation.correlated_features || []).map((feat, idx) => (
                     <div key={idx} className="explain-card" style={{ borderLeft: '3px solid #00c2b2' }}>
                       <div className="explain-title">
-                        <span>Topological Signal: {feat.feature.replaceAll('_', ' ').toUpperCase()}</span>
-                        <span style={{ fontSize: 11, color: '#00c2b2' }}>{feat.weight}</span>
+                        <span>Topological Signal: {(feat?.feature || '').replace(/_/g, ' ').toUpperCase()}</span>
+                        <span style={{ fontSize: 11, color: '#00c2b2' }}>{feat?.weight}</span>
                       </div>
-                      <p style={{ fontSize: 12, color: '#cbd5e1' }}>{feat.observation}</p>
-                      <div className="explain-caveat">{feat.caveat}</div>
+                      <p style={{ fontSize: 12, color: '#cbd5e1' }}>{feat?.observation}</p>
+                      <div className="explain-caveat">{feat?.caveat}</div>
                     </div>
                   ))}
 
@@ -258,7 +258,7 @@ export default function Accounts() {
               {/* Transaction Activity */}
               <div style={{ marginTop: 24 }}>
                 <h4 style={{ fontSize: 13, marginBottom: 10, color: '#e6f0fd' }}>
-                  Associated Transactions ({accountTx.length})
+                  Associated Transactions ({accountTx?.length || 0})
                 </h4>
                 <div className="table-container" style={{ maxHeight: 220 }}>
                   <table>
@@ -271,16 +271,16 @@ export default function Accounts() {
                       </tr>
                     </thead>
                     <tbody>
-                      {accountTx.map((tx) => (
+                      {(accountTx || []).map((tx) => (
                         <tr key={tx.id}>
                           <td className="mono">{tx.id}</td>
                           <td className="mono">
-                            {tx.source_id === selectedAccount.id
-                              ? `Out → ${tx.target_id}`
-                              : `In ← ${tx.source_id}`}
+                            {tx?.source_id === selectedAccount?.id
+                              ? `Out → ${tx?.target_id}`
+                              : `In ← ${tx?.source_id}`}
                           </td>
-                          <td className="mono">{moneyINR(tx.amount)}</td>
-                          <td>{tx.scenario || tx.transaction_type}</td>
+                          <td className="mono">{moneyINR(tx?.amount)}</td>
+                          <td>{tx?.scenario || tx?.transaction_type}</td>
                         </tr>
                       ))}
                     </tbody>

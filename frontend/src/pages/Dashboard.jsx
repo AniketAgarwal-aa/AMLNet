@@ -1,55 +1,95 @@
-import React, { useEffect, useState } from 'react';
-import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip, BarChart, Bar, XAxis, YAxis, Legend } from 'recharts';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
+import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip, Legend } from 'recharts';
 import { api } from '../api';
 import { Badge } from '../components/Badge';
 import { Loading, ErrorBanner } from '../components/Loading';
 import { useResearch } from '../context/ResearchContext';
 
-export const moneyINR = (n) =>
-  new Intl.NumberFormat('en-IN', {
+export const moneyINR = (n) => {
+  if (n === null || n === undefined || n === '' || isNaN(Number(n))) return '—';
+  return new Intl.NumberFormat('en-IN', {
     style: 'currency',
     currency: 'INR',
     maximumFractionDigits: 0
-  }).format(Number(n) || 0);
+  }).format(Number(n));
+};
 
 export default function Dashboard() {
   const { selectedTier, datasetsData } = useResearch();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const currentRequestRef = useRef(0);
 
-  const loadData = () => {
+  const loadData = useCallback(() => {
     setLoading(true);
+    const requestId = ++currentRequestRef.current;
     api(`/dashboard?tier=${selectedTier}`)
       .then((res) => {
-        setData(res);
-        setError(null);
-        setLoading(false);
+        if (requestId === currentRequestRef.current) {
+          setData(res && typeof res === 'object' ? res : null);
+          setError(null);
+          setLoading(false);
+        }
       })
       .catch((err) => {
-        setError(err);
-        setLoading(false);
+        if (requestId === currentRequestRef.current) {
+          setError(err);
+          setLoading(false);
+        }
       });
-  };
+  }, [selectedTier]);
 
   useEffect(() => {
     loadData();
-  }, [selectedTier]);
+    return () => {
+      currentRequestRef.current++;
+    };
+  }, [loadData]);
 
-  const tierMeta = datasetsData?.tiers?.find(t => t.tier_id === selectedTier) || {};
-  const effectiveData = data || {
-    total_accounts: tierMeta.accounts || (selectedTier === '100K' ? 100000 : 100),
-    total_transactions: tierMeta.transactions || (selectedTier === '100K' ? 12476012 : 17144),
-    total_volume: (tierMeta.accounts || 1000) * 14200,
-    suspicious_accounts: tierMeta.sar_accounts || Math.round((tierMeta.accounts || 100) * 0.1709),
-    high_risk_accounts: Math.round((tierMeta.accounts || 100) * 0.08),
-    critical_risk_accounts: tierMeta.sar_accounts || Math.round((tierMeta.accounts || 100) * 0.02),
-    active_model: 'AMLNet-GNN (Multi-Tier)',
-    risk_distribution: { Low: 70, Medium: 15, High: 10, Critical: 5 },
-    recent_transactions: []
-  };
+  // Verified tier specifications from authoritative catalog (no fabricated stats)
+  const tierMeta = (datasetsData?.tiers || []).find((t) => t?.tier_id === selectedTier) || {};
+  const hasLiveData = data !== null && typeof data === 'object';
 
-  const riskPie = Object.entries(effectiveData.risk_distribution || {}).map(([name, value]) => ({ name, value }));
+  const totalAccounts = hasLiveData && data.total_accounts !== undefined
+    ? data.total_accounts
+    : (tierMeta.accounts ?? (selectedTier === '100K' ? 100000 : null));
+
+  const totalTransactions = hasLiveData && data.total_transactions !== undefined
+    ? data.total_transactions
+    : (tierMeta.transactions ?? (selectedTier === '100K' ? 12476012 : null));
+
+  const totalVolume = hasLiveData && data.total_volume !== undefined
+    ? data.total_volume
+    : null; // Never fabricate volume via artificial multipliers
+
+  const suspiciousAccounts = hasLiveData && data.suspicious_accounts !== undefined
+    ? data.suspicious_accounts
+    : (tierMeta.sar_accounts ?? null);
+
+  const highRiskAccounts = hasLiveData && data.high_risk_accounts !== undefined
+    ? data.high_risk_accounts
+    : null; // Never fabricate high risk percentages
+
+  const criticalRiskAccounts = hasLiveData && data.critical_risk_accounts !== undefined
+    ? data.critical_risk_accounts
+    : null;
+
+  const activeModel = hasLiveData && data.active_model
+    ? data.active_model
+    : (tierMeta.top_architecture || (tierMeta.name ? `${tierMeta.name} Model Engine` : 'AMLNet-GNN'));
+
+  const rawDistribution = (hasLiveData && data.risk_distribution && typeof data.risk_distribution === 'object')
+    ? data.risk_distribution
+    : {};
+
+  const riskPie = Object.entries(rawDistribution)
+    .map(([name, value]) => ({
+      name,
+      value: Number(value) || 0
+    }))
+    .filter((entry) => entry.value > 0);
+
   const riskColors = {
     Low: '#10b981',
     Medium: '#f59e0b',
@@ -57,14 +97,30 @@ export default function Dashboard() {
     Critical: '#ef4444'
   };
 
+  const recentAlerts = Array.isArray(data?.recent_alerts) ? data.recent_alerts : [];
+
   return (
     <div>
-      {error && !data && (
-        <div className="banner" style={{ marginBottom: 16, background: '#1e293b', border: '1px solid #334155', color: '#94a3b8', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <span>Notice: Live backend is waking up or synchronizing. Displaying verified Tier {selectedTier} catalog specifications.</span>
-          <button className="secondary" style={{ padding: '3px 8px', fontSize: 11 }} onClick={loadData}>Retry Live Sync</button>
+      {error && !hasLiveData && (
+        <div
+          className="banner"
+          style={{
+            marginBottom: 16,
+            background: '#1e293b',
+            border: '1px solid #334155',
+            color: '#94a3b8',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center'
+          }}
+        >
+          <span>Notice: Live backend is synchronizing. Showing verified Tier {selectedTier} catalog specifications.</span>
+          <button className="secondary" style={{ padding: '3px 8px', fontSize: 11 }} onClick={loadData}>
+            Retry Live Sync
+          </button>
         </div>
       )}
+
       <div className="page-header">
         <div>
           <h1 className="page-title">Financial Intelligence Overview</h1>
@@ -73,46 +129,54 @@ export default function Dashboard() {
           </p>
         </div>
         <div>
-          <button className="secondary" onClick={loadData}>Refresh Data</button>
+          <button className="secondary" onClick={loadData}>
+            Refresh Data
+          </button>
         </div>
       </div>
 
       <div className="stats-grid">
         <div className="stat-card">
           <span className="stat-label">Total Accounts</span>
-          <span className="stat-value">{Number(effectiveData.total_accounts).toLocaleString()}</span>
+          <span className="stat-value">
+            {totalAccounts !== null ? Number(totalAccounts).toLocaleString() : '—'}
+          </span>
           <span className="stat-subtext">Monitored graph entities</span>
         </div>
         <div className="stat-card">
           <span className="stat-label">Total Transactions</span>
-          <span className="stat-value">{Number(effectiveData.total_transactions).toLocaleString()}</span>
+          <span className="stat-value">
+            {totalTransactions !== null ? Number(totalTransactions).toLocaleString() : '—'}
+          </span>
           <span className="stat-subtext">Processed directed edges</span>
         </div>
         <div className="stat-card">
           <span className="stat-label">Total Volume</span>
-          <span className="stat-value">{moneyINR(effectiveData.total_volume)}</span>
+          <span className="stat-value">
+            {totalVolume !== null ? moneyINR(totalVolume) : <span style={{ color: '#64748b' }}>—</span>}
+          </span>
           <span className="stat-subtext">Aggregated capital flow (INR)</span>
         </div>
         <div className="stat-card">
           <span className="stat-label">Suspicious Ground Truth</span>
           <span className="stat-value" style={{ color: '#f59e0b' }}>
-            {effectiveData.suspicious_accounts}
+            {suspiciousAccounts !== null ? Number(suspiciousAccounts).toLocaleString() : '—'}
           </span>
           <span className="stat-subtext">Labeled SAR targets</span>
         </div>
         <div className="stat-card">
           <span className="stat-label">High & Critical Risk</span>
           <span className="stat-value" style={{ color: '#ef4444' }}>
-            {effectiveData.high_risk_accounts}
+            {highRiskAccounts !== null ? Number(highRiskAccounts).toLocaleString() : <span style={{ color: '#64748b' }}>—</span>}
           </span>
           <span className="stat-subtext">
-            {effectiveData.critical_risk_accounts || 0} critical priority
+            {criticalRiskAccounts !== null ? `${criticalRiskAccounts} critical priority` : 'Calibrated via model pass'}
           </span>
         </div>
         <div className="stat-card">
           <span className="stat-label">Active Model Engine</span>
           <span className="stat-value" style={{ fontSize: 16, color: '#00c2b2' }}>
-            {effectiveData.active_model || 'AMLNet-GCN'}
+            {activeModel}
           </span>
           <span className="stat-subtext">Versioned checkpoint</span>
         </div>
@@ -126,20 +190,29 @@ export default function Dashboard() {
               <span className="panel-subtitle">Accounts stratified across calibrated risk tiers</span>
             </div>
           </div>
-          <div className="chart-container">
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie data={riskPie} dataKey="value" nameKey="name" outerRadius={95} innerRadius={50}>
-                  {riskPie.map((entry) => (
-                    <Cell key={entry.name} fill={riskColors[entry.name] || '#64748b'} />
-                  ))}
-                </Pie>
-                <Tooltip
-                  contentStyle={{ background: '#091526', borderColor: '#173256', color: '#fff' }}
-                />
-                <Legend />
-              </PieChart>
-            </ResponsiveContainer>
+          <div className="chart-container" style={{ minHeight: 240, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            {riskPie.length > 0 ? (
+              <ResponsiveContainer width="100%" height={240}>
+                <PieChart>
+                  <Pie data={riskPie} dataKey="value" nameKey="name" outerRadius={95} innerRadius={50}>
+                    {riskPie.map((entry) => (
+                      <Cell key={entry.name} fill={riskColors[entry.name] || '#64748b'} />
+                    ))}
+                  </Pie>
+                  <Tooltip
+                    contentStyle={{ background: '#091526', borderColor: '#173256', color: '#fff' }}
+                  />
+                  <Legend />
+                </PieChart>
+              </ResponsiveContainer>
+            ) : (
+              <div style={{ textAlign: 'center', color: '#64748b', fontSize: 13, padding: 24 }}>
+                <p style={{ margin: 0 }}>Risk distribution awaiting server synchronization.</p>
+                <span style={{ fontSize: 11, color: '#475569', display: 'block', marginTop: 6 }}>
+                  Live model evaluation required to compute calibrated risk bands for Tier {selectedTier}.
+                </span>
+              </div>
+            )}
           </div>
         </div>
 
@@ -161,21 +234,40 @@ export default function Dashboard() {
                 </tr>
               </thead>
               <tbody>
-                {(data.recent_alerts || []).map((alert) => (
-                  <tr key={alert.id}>
-                    <td>
-                      <b style={{ color: '#00c2b2' }}>{alert.pattern_type.replace('_', ' ').toUpperCase()}</b>
-                    </td>
-                    <td>
-                      <Badge level={alert.risk_level} />
-                    </td>
-                    <td className="mono">{moneyINR(alert.amount)}</td>
-                    <td className="mono" style={{ fontSize: 11 }}>
-                      {alert.account_ids.slice(0, 3).join(', ')}
-                      {alert.account_ids.length > 3 && ` +${alert.account_ids.length - 3}`}
+                {recentAlerts.length > 0 ? (
+                  recentAlerts.map((alert, idx) => {
+                    const pattern = typeof alert?.pattern_type === 'string'
+                      ? alert.pattern_type.replace(/_/g, ' ').toUpperCase()
+                      : 'SUSPICIOUS SIGNAL';
+                    const accountIds = Array.isArray(alert?.account_ids) ? alert.account_ids : [];
+                    const alertId = alert?.id || `alt-${idx}`;
+                    const alertAmount = alert?.amount;
+                    const riskLvl = alert?.risk_level || 'Medium';
+
+                    return (
+                      <tr key={alertId}>
+                        <td>
+                          <b style={{ color: '#00c2b2' }}>{pattern}</b>
+                        </td>
+                        <td>
+                          <Badge level={riskLvl} />
+                        </td>
+                        <td className="mono">{moneyINR(alertAmount)}</td>
+                        <td className="mono" style={{ fontSize: 11 }}>
+                          {accountIds.slice(0, 3).join(', ')}
+                          {accountIds.length > 3 && ` +${accountIds.length - 3}`}
+                          {accountIds.length === 0 && <span style={{ color: '#64748b' }}>None</span>}
+                        </td>
+                      </tr>
+                    );
+                  })
+                ) : (
+                  <tr>
+                    <td colSpan="4" style={{ textAlign: 'center', padding: '36px 12px', color: '#64748b', fontSize: 13 }}>
+                      {loading ? 'Fetching suspicious activity signals…' : 'No recent suspicious activity available.'}
                     </td>
                   </tr>
-                ))}
+                )}
               </tbody>
             </table>
           </div>

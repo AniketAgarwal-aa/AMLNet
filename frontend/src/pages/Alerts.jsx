@@ -77,37 +77,46 @@ export default function Alerts() {
                 </tr>
               </thead>
               <tbody>
-                {alerts.map((alt) => (
-                  <tr key={alt.id}>
-                    <td className="mono" style={{ fontWeight: 600 }}>{alt.id}</td>
-                    <td>
-                      <b style={{ color: '#00c2b2' }}>
-                        {alt.pattern_type.replace('_', ' ').toUpperCase()}
-                      </b>
-                    </td>
-                    <td>
-                      <Badge level={alt.risk_level} />
-                    </td>
-                    <td className="mono" style={{ color: '#00c2b2', fontWeight: 600 }}>
-                      {moneyINR(alt.amount)}
-                    </td>
-                    <td className="mono" style={{ fontSize: 12 }}>
-                      {alt.account_ids.join(', ')}
-                    </td>
-                    <td style={{ fontSize: 12, color: '#cbd5e1' }}>
-                      {alt.explanation}
-                    </td>
-                    <td>
-                      <button
-                        className="secondary"
-                        style={{ padding: '4px 8px', fontSize: 11 }}
-                        onClick={() => navigate(`/graph?account=${alt.account_ids[0]}`)}
-                      >
-                        Inspect Ego-Net
-                      </button>
+                {(alerts || []).length > 0 ? (
+                  alerts.map((alt) => (
+                    <tr key={alt.id}>
+                      <td className="mono" style={{ fontWeight: 600 }}>{alt.id}</td>
+                      <td>
+                        <b style={{ color: '#00c2b2' }}>
+                          {(alt.pattern_type || 'Suspicious Activity').replace(/_/g, ' ').toUpperCase()}
+                        </b>
+                      </td>
+                      <td>
+                        <Badge level={alt.risk_level || 'Medium'} />
+                      </td>
+                      <td className="mono" style={{ color: '#00c2b2', fontWeight: 600 }}>
+                        {moneyINR(alt.amount)}
+                      </td>
+                      <td className="mono" style={{ fontSize: 12 }}>
+                        {(alt.account_ids || []).join(', ')}
+                      </td>
+                      <td style={{ fontSize: 12, color: '#cbd5e1' }}>
+                        {alt.explanation || 'Anomalous pattern identified by detection rules.'}
+                      </td>
+                      <td>
+                        <button
+                          className="secondary"
+                          style={{ padding: '4px 8px', fontSize: 11 }}
+                          onClick={() => navigate(`/graph?account=${(alt.account_ids && alt.account_ids[0]) || ''}`)}
+                          disabled={!alt.account_ids || alt.account_ids.length === 0}
+                        >
+                          Inspect Ego-Net
+                        </button>
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan="7" style={{ textAlign: 'center', padding: '36px 12px', color: '#64748b' }}>
+                      No suspicious activity signals found for Tier {selectedTier}.
                     </td>
                   </tr>
-                ))}
+                )}
               </tbody>
             </table>
           </div>

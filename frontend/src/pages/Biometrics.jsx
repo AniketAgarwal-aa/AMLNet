@@ -54,7 +54,8 @@ export default function Biometrics() {
         });
 
         setSessionToken(regRes.session_token);
-        setMessage(`✓ Platform passkey successfully registered! Session Token: ${regRes.session_token.slice(0, 12)}…`);
+        const tokenPreview = regRes.session_token ? `${regRes.session_token.slice(0, 12)}…` : '';
+        setMessage(`✓ Platform passkey successfully registered! Session Token: ${tokenPreview}`);
         loadStatus();
       } else {
         setMessage('WebAuthn API is not supported in this browser environment.');
@@ -88,7 +89,8 @@ export default function Biometrics() {
       });
 
       setSessionToken(authRes.session_token);
-      setMessage(`✓ Biometric authentication verified! Session Token: ${authRes.session_token.slice(0, 12)}…`);
+      const tokenPreview = authRes.session_token ? `${authRes.session_token.slice(0, 12)}…` : '';
+      setMessage(`✓ Biometric authentication verified! Session Token: ${tokenPreview}`);
       loadStatus();
     } catch (err) {
       setMessage(`Authentication failed: ${err.message}`);

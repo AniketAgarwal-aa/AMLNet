@@ -73,7 +73,7 @@ export default function GraphExplorer() {
       cyRef.current.destroy();
     }
 
-    const elements = [...(graphData.nodes || []), ...(graphData.edges || [])];
+    const elements = [...(graphData?.nodes || []), ...(graphData?.edges || [])];
 
     const cy = cytoscape({
       container: containerRef.current,
@@ -192,7 +192,8 @@ export default function GraphExplorer() {
     }
     const q = searchQuery.toLowerCase();
     cy.nodes().forEach((n) => {
-      const match = n.data('id').toLowerCase().includes(q);
+      const nodeId = String(n.data('id') || '');
+      const match = nodeId.toLowerCase().includes(q);
       n.style('opacity', match ? 1 : 0.15);
     });
   }, [searchQuery]);

@@ -193,7 +193,7 @@ export default function Research() {
         <div className="metric-card">
           <div className="metric-label">Top Model ({rankingMetric.toUpperCase()})</div>
           <div className="metric-value highlight" style={{ fontSize: 20 }}>
-            {bestModel ? bestModel.model_name.replace('_', ' ').toUpperCase() : 'None'}
+            {bestModel?.model_name ? bestModel.model_name.replace(/_/g, ' ').toUpperCase() : 'None'}
           </div>
           <div className="metric-desc">
             {bestModel?.metrics?.f1 ? `F1: ${(bestModel.metrics.f1).toFixed(4)} | Rec: ${(bestModel.metrics.recall).toFixed(4)}` : 'Real measured metrics'}
@@ -250,7 +250,7 @@ export default function Research() {
               <div className="best-model-header">
                 <div>
                   <div className="best-tag">LEADING ARCHITECTURE ON {selectedTier}</div>
-                  <h2 className="best-model-title">{bestModel.model_name.replace('_', ' ').toUpperCase()}</h2>
+                  <h2 className="best-model-title">{(bestModel?.model_name || '').replace(/_/g, ' ').toUpperCase()}</h2>
                   <p className="best-model-desc">
                     Evaluated on stratified held-out test split (20%) using validation-tuned decision threshold.
                   </p>
@@ -503,7 +503,7 @@ export default function Research() {
 
                   return (
                     <div key={exp.id} className="cm-box">
-                      <div className="cm-title">{exp.model_name.replace('_', ' ').toUpperCase()}</div>
+                      <div className="cm-title">{(exp?.model_name || '').replace(/_/g, ' ').toUpperCase()}</div>
                       <div className="cm-table">
                         <div className="cm-row">
                           <span className="cm-cell tn" title="True Negatives">
@@ -865,12 +865,12 @@ export default function Research() {
                       {(libraryData?.models || []).map((m, idx) => (
                         <tr key={idx} className={m.publication_status?.startsWith('Published') ? 'active-row' : ''}>
                           <td>
-                            <strong>{m.model_name.replace('_', ' ').toUpperCase()}</strong>
-                            <div style={{ fontSize: 11, color: '#94a3b8' }}>{m.tier_name || selectedTier}</div>
+                            <strong>{(m?.model_name || '').replace(/_/g, ' ').toUpperCase()}</strong>
+                            <div style={{ fontSize: 11, color: '#94a3b8' }}>{m?.tier_name || selectedTier}</div>
                           </td>
                           <td>
                             <span className="family-tag">
-                              {m.kaggle_framework || (m.model_name.includes('gat') || m.model_name.includes('gcn') || m.model_name.includes('sage') ? 'PyTorch' : 'ScikitLearn')}
+                              {m?.kaggle_framework || (((m?.model_name || '').includes('gat') || (m?.model_name || '').includes('gcn') || (m?.model_name || '').includes('sage')) ? 'PyTorch' : 'ScikitLearn')}
                             </span>
                           </td>
                           <td>
