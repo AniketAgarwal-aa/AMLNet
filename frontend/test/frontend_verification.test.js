@@ -161,6 +161,14 @@ test('Dashboard Null-Safety and State Normalization Regression Suite (15 Test Ca
       ? data.critical_risk_accounts
       : null;
 
+    const investigationAccounts = (hasLiveData && data.investigation_accounts !== undefined)
+      ? data.investigation_accounts
+      : (data?.indexed_investigation?.total_accounts ?? (selectedTier === '100K' ? 25000 : totalAccounts));
+
+    const investigationTransactions = (hasLiveData && data.investigation_transactions !== undefined)
+      ? data.investigation_transactions
+      : (data?.indexed_investigation?.total_transactions ?? (selectedTier === '100K' ? 35000 : totalTransactions));
+
     const activeModel = hasLiveData && data.active_model
       ? data.active_model
       : (tierMeta?.top_architecture || 'AMLNet-GNN');
@@ -193,6 +201,8 @@ test('Dashboard Null-Safety and State Normalization Regression Suite (15 Test Ca
       suspiciousAccounts,
       highRiskAccounts,
       criticalRiskAccounts,
+      investigationAccounts,
+      investigationTransactions,
       activeModel,
       riskPie,
       formattedAlerts
@@ -293,4 +303,19 @@ test('Dashboard Null-Safety and State Normalization Regression Suite (15 Test Ca
   // Case 14 & 15: Cold start and reload state
   const c14 = normalizeDashboardState({ data: null, tierMeta: null, selectedTier: '100K' });
   assert.equal(c14.totalAccounts, 100000, 'Cold start without metadata must still fallback safely to 100K standard');
+
+  // Case 16 & 17: Dual-scope architecture reconciliation
+  const c16 = normalizeDashboardState({
+    data: {
+      total_accounts: 100000,
+      total_transactions: 12476012,
+      investigation_accounts: 25000,
+      investigation_transactions: 35000
+    },
+    tierMeta: tierMeta100K,
+    selectedTier: '100K'
+  });
+  assert.equal(c16.totalAccounts, 100000, 'Catalog source accounts must be 100,000');
+  assert.equal(c16.investigationAccounts, 25000, 'Indexed investigation cohort must be 25,000');
+  assert.equal(c16.investigationTransactions, 35000, 'Indexed investigation directed edges must be 35,000');
 });

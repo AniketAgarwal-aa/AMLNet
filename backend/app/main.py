@@ -25,6 +25,7 @@ from .auth.webauthn import (
     generate_authentication_challenge,
     verify_authentication_response,
     require_investigator_auth,
+    require_admin_or_session,
     get_auth_status
 )
 from research.experiment_store import list_experiments, get_experiment, export_experiments_df
@@ -124,6 +125,14 @@ def health(db: Session = Depends(get_db)):
         'features': ['gnn_detection', 'explainable_ai', 'research_experiments', 'biometric_webauthn', 'neighborhood_graph', 'multi_tier_investigation']
     }
 
+TIER_CATALOG_SPECS = {
+    '100': {'accounts': 100, 'transactions': 1000, 'sar_accounts': 10, 'fraud_ratio': 0.10, 'name': 'Tier 1: 100 Accounts'},
+    '1K': {'accounts': 1000, 'transactions': 100000, 'sar_accounts': 168, 'fraud_ratio': 0.168, 'name': 'Tier 2: 1,000 Accounts'},
+    '10K': {'accounts': 10000, 'transactions': 1323234, 'sar_accounts': 1685, 'fraud_ratio': 0.1685, 'name': 'Tier 3: 10,000 Accounts'},
+    '100K': {'accounts': 100000, 'transactions': 12476012, 'sar_accounts': 17091, 'fraud_ratio': 0.1709, 'name': 'Tier 4: 100,000 Accounts (DEFAULT)'},
+    '1M': {'accounts': 1000000, 'transactions': 124703184, 'sar_accounts': 171455, 'fraud_ratio': 0.1715, 'name': 'Tier 5: 1,000,000 Accounts'},
+}
+
 @app.get('/api/dashboard')
 def dashboard(tier: Optional[str] = None, db: Session = Depends(get_db)):
     norm_tier = normalize_tier(tier)
@@ -132,18 +141,49 @@ def dashboard(tier: Optional[str] = None, db: Session = Depends(get_db)):
         if overview and overview.get('total_accounts', 0) > 0:
             levels = overview.get('risk_distribution', {})
             recent_alts = get_investigation_alerts(norm_tier, page=1, page_size=10).get('items', [])
+            spec = TIER_CATALOG_SPECS.get(norm_tier, {})
+            source_acc = spec.get('accounts', overview['total_accounts'])
+            source_tx = spec.get('transactions', overview['total_transactions'])
+            source_sar = spec.get('sar_accounts', overview['suspicious_accounts'])
+            source_fraud_pct = round(spec.get('fraud_ratio', overview.get('fraud_ratio', 0)) * 100, 2)
+            
             return {
-                'total_accounts': overview['total_accounts'],
-                'total_transactions': overview['total_transactions'],
-                'suspicious_accounts': overview['suspicious_accounts'],
+                # Source Catalog scale
+                'total_accounts': source_acc,
+                'total_transactions': source_tx,
+                'suspicious_accounts': source_sar,
+                'average_risk': round(spec.get('fraud_ratio', overview.get('fraud_ratio', 0)) * 100, 1),
+                
+                # Active Indexed Investigation Scope (SQLite graph index for real-time sub-second exploration)
+                'investigation_accounts': overview['total_accounts'],
+                'investigation_transactions': overview['total_transactions'],
+                'investigation_suspicious': overview['suspicious_accounts'],
+                
+                'source_catalog': {
+                    'tier_id': norm_tier,
+                    'name': spec.get('name', f'Tier {norm_tier}'),
+                    'total_accounts': source_acc,
+                    'total_transactions': source_tx,
+                    'sar_accounts': source_sar,
+                    'fraud_prevalence_pct': source_fraud_pct
+                },
+                'indexed_investigation': {
+                    'tier_id': norm_tier,
+                    'total_accounts': overview['total_accounts'],
+                    'total_transactions': overview['total_transactions'],
+                    'suspicious_accounts': overview['suspicious_accounts'],
+                    'total_volume': overview['total_volume'],
+                    'risk_distribution': levels
+                },
+                
                 'high_risk_accounts': levels.get('High', 0) + levels.get('Critical', 0),
                 'critical_risk_accounts': levels.get('Critical', 0),
                 'total_volume': overview['total_volume'],
-                'average_risk': round(overview.get('fraud_ratio', 0) * 100, 1),
                 'risk_distribution': levels,
-                'label_distribution': {'normal': overview['total_accounts'] - overview['suspicious_accounts'], 'suspicious': overview['suspicious_accounts']},
+                'label_distribution': {'normal': source_acc - source_sar, 'suspicious': source_sar},
                 'active_model': f'AMLNet-GCN-{norm_tier}',
                 'tier': norm_tier,
+                'scope_summary': f"Source benchmark: {source_acc:,} accounts & {source_tx:,} transactions. Interactive investigation index: {overview['total_accounts']:,} accounts & {overview['total_transactions']:,} directed edges.",
                 'recent_alerts': [
                     {
                         'id': f"alt-{a['alert_id']}",
@@ -900,25 +940,33 @@ def export_research_data(format: str = 'json'):
 # --- Biometric / WebAuthn Endpoints ---
 
 @app.get('/api/auth/webauthn/status')
-def auth_status(origin: Optional[str] = Header(default=None), referer: Optional[str] = Header(default=None)):
-    st = get_auth_status()
-    from .auth.webauthn import resolve_rp_id
-    st['relying_party_id'] = resolve_rp_id(origin, referer)
-    return st
+def auth_status(origin: Optional[str] = Header(default=None)):
+    return get_auth_status(origin=origin)
 
 @app.post('/api/auth/webauthn/register-options')
-def auth_register_options(payload: dict, origin: Optional[str] = Header(default=None)):
+def auth_register_options(
+    payload: dict,
+    origin: Optional[str] = Header(default=None),
+    auth: dict = Depends(require_admin_or_session)
+):
     username = payload.get('username', 'investigator')
     return generate_registration_challenge(username, origin=origin)
 
 @app.post('/api/auth/webauthn/register-verify')
-def auth_register_verify(payload: dict):
-    return verify_registration_response(payload)
+def auth_register_verify(
+    payload: dict,
+    origin: Optional[str] = Header(default=None),
+    auth: dict = Depends(require_admin_or_session)
+):
+    return verify_registration_response(payload, origin=origin)
 
 @app.post('/api/auth/webauthn/auth-options')
 def auth_options(origin: Optional[str] = Header(default=None)):
     return generate_authentication_challenge(origin=origin)
 
 @app.post('/api/auth/webauthn/auth-verify')
-def auth_verify(payload: dict):
-    return verify_authentication_response(payload)
+def auth_verify(
+    payload: dict,
+    origin: Optional[str] = Header(default=None)
+):
+    return verify_authentication_response(payload, origin=origin)

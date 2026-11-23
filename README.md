@@ -1,6 +1,6 @@
 # AMLNet 2.0 — Graph Neural Network & Explainable AML Intelligence Platform
 
-[![Backend Test Suite](https://img.shields.io/badge/pytest-16%20passed-emerald)](https://github.com/AniketAgarwal-aa/AMLNet)
+[![Backend Test Suite](https://img.shields.io/badge/pytest-23%20passed-emerald)](https://github.com/AniketAgarwal-aa/AMLNet)
 [![Frontend Verification](https://img.shields.io/badge/frontend%20tests-6%20passed-blue)](https://github.com/AniketAgarwal-aa/AMLNet)
 [![Hugging Face Models](https://img.shields.io/badge/Hugging%20Face-30%20Models%20Published-yellow)](https://huggingface.co/AniketAgarwal-aa/AMLNet-Research)
 [![Kaggle Models](https://img.shields.io/badge/Kaggle-Models%20Published-20beff)](https://www.kaggle.com/models/aniketagarwal10aa/amlnet)
@@ -31,8 +31,9 @@ The platform provides a unified multi-tier architecture spanning five benchmark 
 - **Synchronized Global State**: Changing the active dataset tier instantly synchronizes all entity views, transactions, alert feeds, model curves, and topological graphs without stale state.
 - **Five Standardized Scales**: Fully calibrated support across 100, 1K, 10K, 100K (Default), and 1M accounts.
 
-### 2. Multi-Tier Record Investigation Engine
-- **Indexed In-Memory / SQLite Storage**: Integrated compact database (`research_investigation.db`) enabling sub-millisecond retrieval of actual accounts, transactions, typology alerts, and ego-subgraphs across all 5 benchmark tiers.
+### 2. Multi-Tier Record Investigation Engine & Dual-Scope Architecture
+- **Dual-Scope Data Modeling**: Distinguishes the full **Source Benchmark Scale** (e.g. 100,000 accounts & 12,476,012 transactions for Tier 100K) from the active **Interactive Indexed Investigation Cohort** (25,000 stratified accounts, 35,000 transaction edges, and 4,272 SAR targets).
+- **Sub-Second Low-Latency Exploration**: Indexes high-density investigation cohorts into compact SQLite (`research_investigation.db`), allowing fluid, real-time Cytoscape graph exploration and account dossier drill-down on resource-constrained containers (512MB RAM) without risking out-of-memory crashes.
 - **Zero Heavy-Memory Materials**: Eliminates client-side memory exhaustion by serving paginated, bounded query windows for high-volume transactions and entities.
 
 ### 3. Graph Neural Networks & Hybrid Scoring
@@ -53,9 +54,11 @@ The platform provides a unified multi-tier architecture spanning five benchmark 
   3. GNN probability attribution factor.
   4. Correlated counterparty clustering.
 
-### 6. Hardware-Backed WebAuthn Biometrics
+### 6. Hardware-Backed WebAuthn Biometrics & Security Hardening
 - **FIDO2 / WebAuthn Platform Authentication**: Touch ID, Face ID, or Windows Hello cryptographic assertion protecting model retraining, threshold adjustment, and administrative operations.
-- **Dynamic Origin & Relying Party**: Seamlessly adapts between local development (`localhost`) and production (`amlnet.vercel.app`).
+- **Strict Server-Side Origin Whitelist**: RP ID resolution enforces a strict server-side whitelist (`https://amlnet.vercel.app`, `localhost`), rejecting any client-controlled Origin or Referer spoofing.
+- **Replay & Expiry Defenses**: Cryptographic challenges are one-time use (consumed immediately upon verification) with a strict 300-second expiry timeout.
+- **Administrative Passkey Gating**: Platform passkey enrollment is gated behind administrator authorization (`X-Admin-Key` or valid active session), preventing unauthenticated visitors from self-enrolling administrative passkeys.
 - **Privacy Guarantee**: Zero raw biometric data is ever captured, transmitted, or stored on servers. Authentication relies strictly on standard public-key challenge-response cryptography.
 
 ### 7. Configurable Timezone Localization
@@ -235,12 +238,12 @@ npm run dev
 
 AMLNet maintains strict automated testing across all backend services, model pipelines, and client builds:
 
-### Run Backend Unit & Integration Tests (16 Tests)
+### Run Backend Unit & Integration Tests (23 Tests)
 ```bash
 cd backend
 pytest tests -v
 ```
-*Validates reproducible dataset shapes, graph building, leak-free splits, focal loss convergence, explainability endpoints, ego-subgraph queries, and WebAuthn challenge flows.*
+*Validates reproducible dataset shapes, graph building, leak-free splits, focal loss convergence, explainability endpoints, ego-subgraph queries, WebAuthn cryptographic flows, strict origin whitelisting, replay prevention, and admin passkey gating.*
 
 ### Run Frontend Verification Tests & Production Build
 ```bash

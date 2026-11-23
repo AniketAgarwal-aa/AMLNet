@@ -75,6 +75,14 @@ export default function Dashboard() {
     ? data.critical_risk_accounts
     : null;
 
+  const investigationAccounts = (hasLiveData && data.investigation_accounts !== undefined)
+    ? data.investigation_accounts
+    : (data?.indexed_investigation?.total_accounts ?? (selectedTier === '100K' ? 25000 : totalAccounts));
+
+  const investigationTransactions = (hasLiveData && data.investigation_transactions !== undefined)
+    ? data.investigation_transactions
+    : (data?.indexed_investigation?.total_transactions ?? (selectedTier === '100K' ? 35000 : totalTransactions));
+
   const activeModel = hasLiveData && data.active_model
     ? data.active_model
     : (tierMeta.top_architecture || (tierMeta.name ? `${tierMeta.name} Model Engine` : 'AMLNet-GNN'));
@@ -135,20 +143,50 @@ export default function Dashboard() {
         </div>
       </div>
 
+      <div
+        style={{
+          background: 'rgba(15, 23, 42, 0.65)',
+          border: '1px solid #1e293b',
+          borderRadius: 8,
+          padding: '10px 14px',
+          marginBottom: 16,
+          display: 'flex',
+          flexWrap: 'wrap',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: 10,
+          fontSize: 12,
+          color: '#94a3b8'
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <span style={{ display: 'inline-block', width: 8, height: 8, borderRadius: '50%', background: '#00c2b2' }} />
+          <strong style={{ color: '#e2e8f0' }}>Dual Scope Architecture:</strong>
+          <span>
+            Source Catalog: <b style={{ color: '#f1f5f9' }}>{Number(totalAccounts || 100000).toLocaleString()} Accounts</b> ({totalTransactions ? `${Number(totalTransactions).toLocaleString()} Tx` : ''})
+            {' · '}
+            Active Graph Index: <b style={{ color: '#00c2b2' }}>{Number(investigationAccounts || 25000).toLocaleString()} Accounts</b> ({Number(investigationTransactions || 35000).toLocaleString()} Edges)
+          </span>
+        </div>
+        <span style={{ fontSize: 11, color: '#64748b' }}>
+          Sub-second interactive exploration partition on 512MB RAM container
+        </span>
+      </div>
+
       <div className="stats-grid">
         <div className="stat-card">
-          <span className="stat-label">Total Accounts</span>
+          <span className="stat-label">Total Accounts (Catalog)</span>
           <span className="stat-value">
             {totalAccounts !== null ? Number(totalAccounts).toLocaleString() : '—'}
           </span>
-          <span className="stat-subtext">Monitored graph entities</span>
+          <span className="stat-subtext">Benchmark catalog scale</span>
         </div>
         <div className="stat-card">
           <span className="stat-label">Total Transactions</span>
           <span className="stat-value">
             {totalTransactions !== null ? Number(totalTransactions).toLocaleString() : '—'}
           </span>
-          <span className="stat-subtext">Processed directed edges</span>
+          <span className="stat-subtext">Catalog directed edges</span>
         </div>
         <div className="stat-card">
           <span className="stat-label">Total Volume</span>
@@ -165,12 +203,12 @@ export default function Dashboard() {
           <span className="stat-subtext">Labeled SAR targets</span>
         </div>
         <div className="stat-card">
-          <span className="stat-label">High & Critical Risk</span>
-          <span className="stat-value" style={{ color: '#ef4444' }}>
-            {highRiskAccounts !== null ? Number(highRiskAccounts).toLocaleString() : <span style={{ color: '#64748b' }}>—</span>}
+          <span className="stat-label">Active Graph Index</span>
+          <span className="stat-value" style={{ color: '#00c2b2' }}>
+            {investigationAccounts !== null ? Number(investigationAccounts).toLocaleString() : '—'}
           </span>
           <span className="stat-subtext">
-            {criticalRiskAccounts !== null ? `${criticalRiskAccounts} critical priority` : 'Calibrated via model pass'}
+            {investigationTransactions !== null ? `${Number(investigationTransactions).toLocaleString()} indexed edges` : 'Interactive cohort'}
           </span>
         </div>
         <div className="stat-card">
