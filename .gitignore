@@ -44,3 +44,4 @@ backend/research/checkpoints/
 *.pth
 dist_hf/
 dist_kaggle/
+AMLNET_*.txt
