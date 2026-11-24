@@ -125,9 +125,21 @@ def test_research_model_library_endpoint(client):
     assert 'models' in data
     assert len(data['models']) == 6
     assert data['repository'] == 'AniketAgarwal-aa/AMLNet-Research'
-    # Verify all 6 Tier 4 models are published
-    published = [m for m in data['models'] if m['publication_status'].startswith('Published')]
-    assert len(published) == 6
+    # All six 100K benchmark records must be available. The committed
+    # benchmark manifest includes checkpoint paths for the three GNNs only;
+    # tabular baselines have metrics but no local artifact path in this index.
+    models = {m['model_name']: m for m in data['models']}
+    assert set(models) == {
+        'gat', 'graphsage', 'gcn',
+        'gradient_boosting', 'random_forest', 'logistic_regression',
+    }
+    checkpoint_backed = [m for m in models.values() if m['artifact_path']]
+    metrics_only = [m for m in models.values() if not m['artifact_path']]
+    assert len(checkpoint_backed) == 3
+    assert len(metrics_only) == 3
+    assert all(m['publication_status'].startswith('Published') for m in checkpoint_backed)
+    assert all(m['publication_status'] == 'Metrics Available, Weights Not Published' for m in metrics_only)
+    assert all(m['metrics'] for m in models.values())
 
 def test_accounts_default_all_risk_levels(client):
     """Verify opening /api/accounts with no explicit risk filter displays Low, Medium, and Critical together."""
