@@ -2,11 +2,10 @@
 
 **Graph-Based Anti-Money Laundering Detection & Financial Intelligence**
 
-[![Release v2.2.3](docs/badges/release.svg)](https://github.com/AniketAgarwal-aa/AMLNet/releases/tag/v2.2.3)
 [![30 model configurations](docs/badges/models.svg)](#models)
 [![MIT License](docs/badges/license.svg)](LICENSE)
 
-**[Live Application](https://amlnet.vercel.app)** · **[API Documentation](https://amlnet-api.onrender.com/docs)** · **[GitHub Releases](https://github.com/AniketAgarwal-aa/AMLNet/releases)** · **[CI Checks](https://github.com/AniketAgarwal-aa/AMLNet/actions/workflows/ci.yml)**
+**[Live Application](https://amlnet.vercel.app)**
 
 AMLNet is a full-stack application for exploring suspicious behavior in synthetic financial transaction networks. It brings together graph analytics, machine-learning risk scoring, account investigations and interactive visualizations. Detection scores help prioritize reviews; they do not establish criminal activity.
 
@@ -53,7 +52,7 @@ AMLNet supports five synthetic benchmark tiers. The selected **source dataset** 
 | 1M | 1,000,000 | 124,703,184 |
 | **Total** | **1,111,100** | **138,637,107** |
 
-For the default 100K tier, the interactive index contains **25,000 accounts and 35,000 retained transaction edges**. Source transactions were streamed for feature aggregation; GNN training uses sampled graph edges rather than every source edge. See the [benchmark manifest](backend/research/published_benchmark_manifest.json) for model-specific results and coverage.
+For the default 100K tier, the interactive index contains **25,000 accounts and 35,000 retained transaction edges**. Source transactions were streamed for feature aggregation; GNN training uses sampled graph edges rather than every source edge.
 
 ## Models
 
@@ -93,8 +92,7 @@ npm ci
 npm run dev
 ```
 
-Open **[http://localhost:5173](http://localhost:5173)**. Local API documentation is available at **[http://localhost:8000/docs](http://localhost:8000/docs)**.
-
+Open **[http://localhost:5173](http://localhost:5173)**.
 
 ## Testing
 
@@ -114,7 +112,7 @@ npm run build
 - Dataset accounts, transactions and labels are synthetic.
 - Large-tier interactive indexes and sampled training graphs are smaller than their source datasets.
 - Model performance on synthetic data does not establish real-world financial crime detection accuracy.
-- For technical details, see [architecture notes](docs/ARCHITECTURE.md) and the [benchmark manifest](backend/research/published_benchmark_manifest.json).
+- Technical architecture: [Architecture Notes](docs/ARCHITECTURE.md).
 
 ## License & Attribution
 
