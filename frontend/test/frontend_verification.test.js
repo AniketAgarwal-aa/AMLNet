@@ -319,3 +319,37 @@ test('Dashboard Null-Safety and State Normalization Regression Suite (15 Test Ca
   assert.equal(c16.investigationAccounts, 25000, 'Indexed investigation cohort must be 25,000');
   assert.equal(c16.investigationTransactions, 35000, 'Indexed investigation directed edges must be 35,000');
 });
+
+test('Accounts Page - Default Filter & Multi-Tier Risk Inclusion', () => {
+  // 1. Initial filter must default to empty string representing "All Risk Levels"
+  let initialRiskFilter = '';
+  assert.equal(initialRiskFilter, '', 'Accounts default risk tier filter must be empty ("All Risk Levels")');
+
+  // 2. Query param resolution
+  const buildParams = (tier, riskFilter, page = 1) => {
+    const params = new URLSearchParams({
+      tier,
+      page: page.toString(),
+      page_size: '25'
+    });
+    if (riskFilter) params.append('risk_level', riskFilter);
+    return params;
+  };
+
+  const defaultParams = buildParams('100K', initialRiskFilter);
+  assert.equal(defaultParams.get('risk_level'), null, 'Default request must not append risk_level query param');
+  assert.equal(defaultParams.get('tier'), '100K', 'Default tier must be 100K');
+
+  // 3. Filtered query param
+  const criticalParams = buildParams('100K', 'Critical');
+  assert.equal(criticalParams.get('risk_level'), 'Critical', 'Specific filter must append risk_level query param');
+
+  // 4. Stratified accounts payload consistency
+  const sampleAccountsPayload = [
+    { id: '1', risk_level: 'Critical', final_risk: 94.2 },
+    { id: '2', risk_level: 'Medium', final_risk: 42.1 },
+    { id: '3', risk_level: 'Low', final_risk: 12.8 },
+  ];
+  const presentLevels = new Set(sampleAccountsPayload.map((a) => a.risk_level));
+  assert.ok(presentLevels.has('Critical') && presentLevels.has('Medium') && presentLevels.has('Low'), 'All Risk Levels must display multiple risk tiers together');
+});

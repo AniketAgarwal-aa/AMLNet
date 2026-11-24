@@ -1,7 +1,7 @@
 # AMLNet 2.0 — Graph Neural Network & Explainable AML Intelligence Platform
 
-[![Backend Test Suite](https://img.shields.io/badge/pytest-23%20passed-emerald)](https://github.com/AniketAgarwal-aa/AMLNet)
-[![Frontend Verification](https://img.shields.io/badge/frontend%20tests-6%20passed-blue)](https://github.com/AniketAgarwal-aa/AMLNet)
+[![Backend Test Suite](https://img.shields.io/badge/pytest-25%20passed-emerald)](https://github.com/AniketAgarwal-aa/AMLNet)
+[![Frontend Verification](https://img.shields.io/badge/frontend%20tests-7%20passed-blue)](https://github.com/AniketAgarwal-aa/AMLNet)
 [![Hugging Face Models](https://img.shields.io/badge/Hugging%20Face-30%20Models%20Published-yellow)](https://huggingface.co/AniketAgarwal-aa/AMLNet-Research)
 [![Kaggle Models](https://img.shields.io/badge/Kaggle-Models%20Published-20beff)](https://www.kaggle.com/models/aniketagarwal10aa/amlnet)
 [![Production Frontend](https://img.shields.io/badge/deployment-Vercel-black)](https://amlnet.vercel.app)
@@ -238,12 +238,12 @@ npm run dev
 
 AMLNet maintains strict automated testing across all backend services, model pipelines, and client builds:
 
-### Run Backend Unit & Integration Tests (23 Tests)
+### Run Backend Unit & Integration Tests (25 Tests)
 ```bash
 cd backend
 pytest tests -v
 ```
-*Validates reproducible dataset shapes, graph building, leak-free splits, focal loss convergence, explainability endpoints, ego-subgraph queries, WebAuthn cryptographic flows, strict origin whitelisting, replay prevention, and admin passkey gating.*
+*Validates reproducible dataset shapes, graph building, leak-free splits, focal loss convergence, explainability endpoints, ego-subgraph queries, WebAuthn cryptographic flows, strict origin whitelisting, replay prevention, admin passkey gating, and accounts default risk stratification.*
 
 ### Run Frontend Verification Tests & Production Build
 ```bash

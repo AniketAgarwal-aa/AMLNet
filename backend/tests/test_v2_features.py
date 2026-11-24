@@ -128,3 +128,24 @@ def test_research_model_library_endpoint(client):
     # Verify all 6 Tier 4 models are published
     published = [m for m in data['models'] if m['publication_status'].startswith('Published')]
     assert len(published) == 6
+
+def test_accounts_default_all_risk_levels(client):
+    """Verify opening /api/accounts with no explicit risk filter displays Low, Medium, and Critical together."""
+    for tier in ['100', '1K', '10K', '100K', '1M']:
+        res = client.get(f'/api/accounts?tier={tier}&page=1&page_size=25')
+        assert res.status_code == 200
+        data = res.json()
+        assert len(data['items']) == 25
+        risk_levels = {a['risk_level'] for a in data['items']}
+        assert len(risk_levels) >= 2, f"Tier {tier} expected multiple risk levels together, got {risk_levels}"
+        assert 'Critical' in risk_levels
+        assert 'Low' in risk_levels or 'Medium' in risk_levels
+
+def test_accounts_filtered_by_risk_level(client):
+    """Verify that specific risk_level filter returns only matching accounts without corrupting total count."""
+    for tier in ['100', '1K', '10K', '100K', '1M']:
+        res = client.get(f'/api/accounts?tier={tier}&risk_level=Critical&page=1&page_size=25')
+        assert res.status_code == 200
+        data = res.json()
+        assert all(a['risk_level'] == 'Critical' for a in data['items'])
+        assert data['total'] > 0

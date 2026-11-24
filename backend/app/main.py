@@ -239,7 +239,7 @@ def accounts(
             search=search,
             risk_level=risk_level
         )
-        if res.get('total', 0) > 0 or search:
+        if res.get('total', 0) > 0 or search or risk_level:
             # Transform to client expected format
             items = []
             for a in res.get('items', []):
@@ -271,7 +271,10 @@ def accounts(
         q = q.filter(Account.final_risk >= min_risk)
 
     total = q.count()
-    items = q.order_by(desc(Account.final_risk)).offset((page - 1) * page_size).limit(min(page_size, 100)).all()
+    if risk_level or search or min_risk is not None:
+        items = q.order_by(desc(Account.final_risk)).offset((page - 1) * page_size).limit(min(page_size, 100)).all()
+    else:
+        items = q.order_by(Account.id).offset((page - 1) * page_size).limit(min(page_size, 100)).all()
     return {'items': [account_out(x) for x in items], 'total': total, 'page': page, 'page_size': page_size}
 
 @app.get('/api/accounts/{account_id}')

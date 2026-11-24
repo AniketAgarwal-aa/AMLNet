@@ -89,9 +89,24 @@ def get_investigation_accounts(
         c.execute(count_query, params)
         total = c.fetchone()[0]
 
-        query += " ORDER BY risk_score DESC LIMIT ? OFFSET ?"
-        params.extend([min(page_size, 200), (page - 1) * page_size])
-        c.execute(query, params)
+        if risk_level or search:
+            query += " ORDER BY risk_score DESC LIMIT ? OFFSET ?"
+            params.extend([min(page_size, 200), (page - 1) * page_size])
+            c.execute(query, params)
+        else:
+            # Default (All Risk Levels): display Low, Medium, and Critical accounts together
+            # using ROW_NUMBER() window partitioning to present a balanced, representative cross-section
+            stratified_query = f"""
+                SELECT * FROM (
+                    SELECT *, ROW_NUMBER() OVER (PARTITION BY risk_level ORDER BY risk_score DESC) as _rn
+                    FROM ({query})
+                )
+                ORDER BY _rn ASC, risk_score DESC
+                LIMIT ? OFFSET ?
+            """
+            params.extend([min(page_size, 200), (page - 1) * page_size])
+            c.execute(stratified_query, params)
+
         rows = [dict(r) for r in c.fetchall()]
 
     return {"items": rows, "total": total, "page": page, "page_size": page_size, "tier": tier}

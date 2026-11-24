@@ -49,6 +49,14 @@ export default function Accounts() {
     loadAccounts();
   }, [search, riskFilter, page, selectedTier]);
 
+  // Reset pagination and detail panels when changing dataset tier to avoid stale state
+  useEffect(() => {
+    setPage(1);
+    setSelectedAccount(null);
+    setExplanation(null);
+    setAccountTx([]);
+  }, [selectedTier]);
+
   const selectAccount = (acc) => {
     setSelectedAccount(acc);
     setExplaining(true);
@@ -99,7 +107,7 @@ export default function Accounts() {
             setPage(1);
           }}
         >
-          <option value="">All Risk Tiers</option>
+          <option value="">All Risk Levels</option>
           <option value="Critical">Critical (≥80)</option>
           <option value="High">High (60-79)</option>
           <option value="Medium">Medium (30-59)</option>
@@ -152,6 +160,32 @@ export default function Accounts() {
                   ))}
                 </tbody>
               </table>
+            </div>
+          )}
+
+          {total > 25 && (
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 14, fontSize: 12, color: '#94a3b8' }}>
+              <span>
+                Page {page} of {Math.max(1, Math.ceil(total / 25))} ({Number(total).toLocaleString()} accounts)
+              </span>
+              <div style={{ display: 'flex', gap: 6 }}>
+                <button
+                  className="secondary"
+                  style={{ padding: '4px 10px', fontSize: 12 }}
+                  disabled={page <= 1}
+                  onClick={() => setPage((p) => Math.max(1, p - 1))}
+                >
+                  Previous
+                </button>
+                <button
+                  className="secondary"
+                  style={{ padding: '4px 10px', fontSize: 12 }}
+                  disabled={page >= Math.ceil(total / 25)}
+                  onClick={() => setPage((p) => p + 1)}
+                >
+                  Next
+                </button>
+              </div>
             </div>
           )}
         </div>
