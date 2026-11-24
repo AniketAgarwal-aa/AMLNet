@@ -105,7 +105,6 @@ npm run build
 
 ## License & Attribution
 
-AMLNet is released under the **[MIT License](LICENSE)**.
-
-The synthetic benchmark datasets are derived from the [IBM AMLSim](https://github.com/IBM/AMLSim) project.
+- **License:** [MIT License](LICENSE)
+- **Dataset attribution:** Synthetic benchmark datasets derived from [IBM AMLSim](https://github.com/IBM/AMLSim).
 
