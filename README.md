@@ -2,79 +2,68 @@
 
 **Graph-Based Anti-Money Laundering Detection & Financial Intelligence**
 
-[![30 model configurations](docs/badges/models.svg)](#models)
 [![MIT License](docs/badges/license.svg)](LICENSE)
 
-**[Live Application](https://amlnet.vercel.app)**
+**[Explore the Live Application](https://amlnet.vercel.app)**
 
-AMLNet is a full-stack application for exploring suspicious behavior in synthetic financial transaction networks. It brings together graph analytics, machine-learning risk scoring, account investigations and interactive visualizations. Detection scores help prioritize reviews; they do not establish criminal activity.
+AMLNet is a full-stack financial crime analytics application built around synthetic transaction networks. It combines account risk analysis, transaction investigation, graph visualization, explainable predictions and model comparisons in a single interactive workspace.
 
 ## Features
 
-- **Dataset explorer:** Five AMLSim-derived tiers, from 100 to 1 million accounts, with **100K selected by default**.
-- **Account intelligence:** Search, inspect and filter accounts across Low, Medium, High and Critical risk levels.
-- **Transaction analysis:** Explore account transfers, suspicious activity signals and investigation details.
-- **Graph Explorer:** Visualize directed fund flows, connected neighborhoods and risk-coded entities.
-- **Model evaluation:** Compare GCN, GraphSAGE, GAT, Logistic Regression, Random Forest and HistGradientBoosting.
-- **Security:** Administrative authorization and WebAuthn/passkey-based authentication flows.
+- **Multi-scale datasets** — Explore five AMLSim-derived network sizes, from 100 to 1 million source accounts, with **100K as the default**.
+- **Account investigations** — Search account profiles and filter by Low, Medium, High and Critical risk levels.
+- **Transaction intelligence** — Examine transfers, account activity and suspicious-activity indicators.
+- **Interactive Graph Explorer** — Follow directed fund flows and explore connected account neighborhoods.
+- **Risk analysis and explainability** — Review risk scores, model comparisons and the signals behind flagged accounts.
+- **Passkey security** — WebAuthn authentication and authorization for supported administrative workflows.
 
 ## Technology Stack
 
-| Layer | Technologies |
+| Component | Technologies |
 | --- | --- |
 | Frontend | React, Vite, Recharts, Cytoscape.js |
-| API | Python, FastAPI |
-| Data | PostgreSQL, SQLite, pandas, NumPy |
-| Machine Learning | PyTorch, PyTorch Geometric, scikit-learn |
-| Deployment | Vercel, Render |
+| Backend | Python, FastAPI |
+| Data storage | PostgreSQL, SQLite |
+| Machine learning | PyTorch, PyTorch Geometric, scikit-learn |
+| Hosting | Vercel, Render |
 
 ## Architecture
 
 ```mermaid
 flowchart LR
-    UI["React + Vite<br/>Investigations & graphs"] --> API["FastAPI<br/>Application API"]
-    API --> PG["PostgreSQL<br/>Operational records"]
-    API --> IDX["SQLite<br/>Indexed investigations"]
-    API --> INF["ML & GNN<br/>Risk scoring"]
-    PIPE["Offline processing<br/>Training & evaluation"] --> HUB["Model registries<br/>Hugging Face & Kaggle"]
+    A["React + Vite<br/>Dashboard & Investigations"] --> B["FastAPI<br/>REST API"]
+    B --> C["PostgreSQL<br/>Application Data"]
+    B --> D["SQLite<br/>Investigation Index"]
+    B --> E["Risk Scoring<br/>& Explainability"]
 ```
 
-## Datasets
+## Dataset Coverage
 
-AMLNet supports five synthetic benchmark tiers. The selected **source dataset** and the smaller **interactive investigation index** are distinct.
+AMLNet uses synthetic financial networks at five scales.
 
-| Tier | Source Accounts | Source Transactions |
+| Dataset Tier | Source Accounts | Source Transactions |
 | --- | ---: | ---: |
 | 100 | 100 | 17,144 |
 | 1K | 1,000 | 117,533 |
 | 10K | 10,000 | 1,323,234 |
-| **100K (default)** | **100,000** | **12,476,012** |
+| **100K (Default)** | **100,000** | **12,476,012** |
 | 1M | 1,000,000 | 124,703,184 |
 | **Total** | **1,111,100** | **138,637,107** |
 
-For the default 100K tier, the interactive index contains **25,000 accounts and 35,000 retained transaction edges**. Source transactions were streamed for feature aggregation; GNN training uses sampled graph edges rather than every source edge.
+The full source data and the interactive investigation index are different scopes. For example, the default 100K tier uses an indexed investigation cohort of **25,000 accounts** and **35,000 transaction edges** for responsive exploration. Account features were aggregated from source transactions, while graph training uses sampled edges rather than the entire source topology.
 
-## Models
+## Run Locally
 
-**30 model configurations:** Six architectures across five dataset tiers.
+**Requirements:** Python 3.11+, Node.js 20+ and npm.
 
-| Model Family | Architectures | Registry |
-| --- | --- | --- |
-| Graph Neural Networks | GCN, GraphSAGE, GAT | [Kaggle — PyTorch](https://www.kaggle.com/models/aniketagarwal10aa/amlnet/PyTorch/gnn-architectures) |
-| Classical ML | Logistic Regression, Random Forest, HistGradientBoosting | [Kaggle — Scikit-learn](https://www.kaggle.com/models/aniketagarwal10aa/amlnet/ScikitLearn/tabular-baselines) |
-
-The model collection is also available on **[Hugging Face](https://huggingface.co/AniketAgarwal-aa/AMLNet-Research)** and **[Kaggle](https://www.kaggle.com/models/aniketagarwal10aa/amlnet)**.
-
-## Quick Start
-
-**Prerequisites:** Python 3.11+, Node.js 20+ and npm. Some features require environment configuration and database access.
+Clone the repository:
 
 ```bash
 git clone https://github.com/AniketAgarwal-aa/AMLNet.git
 cd AMLNet
 ```
 
-**Start the backend** (terminal 1):
+**Backend** — in the first terminal:
 
 ```bash
 cd backend
@@ -84,7 +73,7 @@ python -m pip install -r requirements.txt
 uvicorn app.main:app --reload --port 8000
 ```
 
-**Start the frontend** (terminal 2, from the project root):
+**Frontend** — in a second terminal, from the repository root:
 
 ```bash
 cd frontend
@@ -92,29 +81,28 @@ npm ci
 npm run dev
 ```
 
-Open **[http://localhost:5173](http://localhost:5173)**.
+Open **[http://localhost:5173](http://localhost:5173)**. Some features require the appropriate database and environment configuration.
 
 ## Testing
 
-Run from the repository root:
+From the repository root, run:
 
 ```bash
 cd backend
 python -m pytest -q
+
 cd ../frontend
 npm ci
 npm test
 npm run build
 ```
 
-## Notes
-
-- Dataset accounts, transactions and labels are synthetic.
-- Large-tier interactive indexes and sampled training graphs are smaller than their source datasets.
-- Model performance on synthetic data does not establish real-world financial crime detection accuracy.
-- Technical architecture: [Architecture Notes](docs/ARCHITECTURE.md).
-
 ## License & Attribution
 
-- **AMLNet:** [MIT License](LICENSE).
-- **Dataset generator:** [IBM AMLSim](https://github.com/IBM/AMLSim) (Apache-2.0); its license applies separately.
+AMLNet is released under the **[MIT License](LICENSE)**.
+
+The synthetic benchmark datasets are derived from the [IBM AMLSim](https://github.com/IBM/AMLSim) project.
+
+---
+
+<sub>AMLNet is a research and demonstration application using synthetic data. Risk scores are investigation aids, not determinations of criminal activity.</sub>
