@@ -1,12 +1,8 @@
 # AMLNet 2.0 — Graph Neural Network & Explainable AML Intelligence Platform
 
-[![Backend Test Suite](https://img.shields.io/badge/pytest-25%20passed-emerald)](https://github.com/AniketAgarwal-aa/AMLNet)
-[![Frontend Verification](https://img.shields.io/badge/frontend%20tests-7%20passed-blue)](https://github.com/AniketAgarwal-aa/AMLNet)
-[![Hugging Face Models](https://img.shields.io/badge/Hugging%20Face-30%20Models%20Published-yellow)](https://huggingface.co/AniketAgarwal-aa/AMLNet-Research)
-[![Kaggle Models](https://img.shields.io/badge/Kaggle-Models%20Published-20beff)](https://www.kaggle.com/models/aniketagarwal10aa/amlnet)
-[![Production Frontend](https://img.shields.io/badge/deployment-Vercel-black)](https://amlnet.vercel.app)
-[![Production API](https://img.shields.io/badge/backend-Render-indigo)](https://amlnet-api.onrender.com)
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+**Project status:** [Backend tests: 25 passed](https://github.com/AniketAgarwal-aa/AMLNet/tree/main/backend/tests) · [Frontend checks: 7 suites passed](https://github.com/AniketAgarwal-aa/AMLNet/blob/main/frontend/test/frontend_verification.test.js) · [Latest release: v2.2.3](https://github.com/AniketAgarwal-aa/AMLNet/releases/tag/v2.2.3)
+
+**Resources:** [Live application](https://amlnet.vercel.app) · [API documentation](https://amlnet-api.onrender.com/docs) · [Hugging Face models](https://huggingface.co/AniketAgarwal-aa/AMLNet-Research) · [Kaggle models](https://www.kaggle.com/models/aniketagarwal10aa/amlnet) · [MIT License](LICENSE)
 
 **AMLNet 2.0** is an enterprise-grade financial crime detection and graph research platform. By modeling financial entities as graph nodes and fund transfers as directed, attributed edges, AMLNet bridges inductive Graph Neural Networks (GNNs) with explainable transaction typologies to identify sophisticated money laundering rings with calibrated precision.
 
