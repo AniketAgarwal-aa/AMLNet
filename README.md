@@ -95,7 +95,6 @@ npm run dev
 
 Open **[http://localhost:5173](http://localhost:5173)**. Local API documentation is available at **[http://localhost:8000/docs](http://localhost:8000/docs)**.
 
-Configuration examples: [`.env.example`](.env.example) · [`.env.production.example`](.env.production.example) · [Deployment Guide](DEPLOYMENT.md).
 
 ## Testing
 
