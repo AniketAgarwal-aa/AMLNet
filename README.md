@@ -8,6 +8,8 @@
 
 AMLNet is a full-stack financial crime analytics application built around synthetic transaction networks. It combines account risk analysis, transaction investigation, graph visualization, explainable predictions and model comparisons in a single interactive workspace.
 
+---
+
 ## Features
 
 - **Multi-scale datasets** — Explore five AMLSim-derived network sizes, from 100 to 1 million source accounts, with **100K as the default**.
@@ -52,7 +54,9 @@ AMLNet uses synthetic financial networks at five scales.
 
 The full source data and the interactive investigation index are different scopes. For example, the default 100K tier uses an indexed investigation cohort of **25,000 accounts** and **35,000 transaction edges** for responsive exploration. Account features were aggregated from source transactions, while graph training uses sampled edges rather than the entire source topology.
 
-## Run Locally
+---
+
+## Quick Start
 
 **Requirements:** Python 3.11+, Node.js 20+ and npm.
 
@@ -96,6 +100,8 @@ npm ci
 npm test
 npm run build
 ```
+
+---
 
 ## License & Attribution
 
