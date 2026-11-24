@@ -103,6 +103,3 @@ AMLNet is released under the **[MIT License](LICENSE)**.
 
 The synthetic benchmark datasets are derived from the [IBM AMLSim](https://github.com/IBM/AMLSim) project.
 
----
-
-<sub>AMLNet is a research and demonstration application using synthetic data. Risk scores are investigation aids, not determinations of criminal activity.</sub>
