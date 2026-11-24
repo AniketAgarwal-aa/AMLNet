@@ -1,79 +1,81 @@
 # AMLNet
 
-**Graph-based anti-money-laundering detection and financial intelligence**
+**Graph-Based Anti-Money Laundering Detection & Financial Intelligence**
 
-[![CI](https://github.com/AniketAgarwal-aa/AMLNet/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/AniketAgarwal-aa/AMLNet/actions/workflows/ci.yml)
-[![Release](https://img.shields.io/github/v/release/AniketAgarwal-aa/AMLNet?style=flat-square)](https://github.com/AniketAgarwal-aa/AMLNet/releases/latest)
-[![License: MIT](https://img.shields.io/badge/License-MIT-007ec6?style=flat-square)](LICENSE)
-[![Models: 30](https://img.shields.io/badge/Models-30%20artifacts-2ea44f?style=flat-square)](https://www.kaggle.com/models/aniketagarwal10aa/amlnet)
+[![Release v2.2.3](docs/badges/release.svg)](https://github.com/AniketAgarwal-aa/AMLNet/releases/tag/v2.2.3)
+[![30 model configurations](docs/badges/models.svg)](#models)
+[![MIT License](docs/badges/license.svg)](LICENSE)
 
-[**Live application**](https://amlnet.vercel.app) · [**API documentation**](https://amlnet-api.onrender.com/docs) · [**Latest release**](https://github.com/AniketAgarwal-aa/AMLNet/releases/latest) · [**Hugging Face**](https://huggingface.co/AniketAgarwal-aa/AMLNet-Research) · [**Kaggle Models**](https://www.kaggle.com/models/aniketagarwal10aa/amlnet)
+**[Live Application](https://amlnet.vercel.app)** · **[API Documentation](https://amlnet-api.onrender.com/docs)** · **[GitHub Releases](https://github.com/AniketAgarwal-aa/AMLNet/releases)** · **[CI Checks](https://github.com/AniketAgarwal-aa/AMLNet/actions/workflows/ci.yml)**
 
-AMLNet explores suspicious activity in synthetic financial transaction networks. It combines transaction analytics, graph visualization, machine-learning risk scoring and account-level investigations in a React and FastAPI application. Risk indicators are investigative signals, **not proof of financial crime**.
+AMLNet is a full-stack application for exploring suspicious behavior in synthetic financial transaction networks. It brings together graph analytics, machine-learning risk scoring, account investigations and interactive visualizations. Detection scores help prioritize reviews; they do not establish criminal activity.
 
-## Highlights
+## Features
 
-- **Five dataset tiers:** 100, 1K, 10K, **100K (default)** and 1M source accounts.
-- **Investigations:** Browse accounts, transactions, suspicious-activity signals and model explanations with dataset-aware filters.
-- **Graph Explorer:** Inspect directed money flows, connected neighborhoods and account risk levels.
-- **Model comparison:** GCN, GraphSAGE and GAT alongside Logistic Regression, Random Forest and HistGradientBoosting.
-- **Security:** Administrative endpoints and passkey-based flows with server-side access checks.
+- **Dataset explorer:** Five AMLSim-derived tiers, from 100 to 1 million accounts, with **100K selected by default**.
+- **Account intelligence:** Search, inspect and filter accounts across Low, Medium, High and Critical risk levels.
+- **Transaction analysis:** Explore account transfers, suspicious activity signals and investigation details.
+- **Graph Explorer:** Visualize directed fund flows, connected neighborhoods and risk-coded entities.
+- **Model evaluation:** Compare GCN, GraphSAGE, GAT, Logistic Regression, Random Forest and HistGradientBoosting.
+- **Security:** Administrative authorization and WebAuthn/passkey-based authentication flows.
 
-## Application architecture
-
-```mermaid
-flowchart LR
-    UI["React + Vite<br/>Dashboard & investigations"] --> API["FastAPI<br/>REST endpoints"]
-    API --> DB["PostgreSQL<br/>Application data"]
-    API --> IDX["SQLite<br/>Indexed investigation data"]
-    API --> ML["Risk scoring<br/>ML + GNN models"]
-    TRAIN["Offline data processing<br/>& model evaluation"] --> REG["Model artifacts<br/>Hugging Face / Kaggle"]
-```
+## Technology Stack
 
 | Layer | Technologies |
 | --- | --- |
 | Frontend | React, Vite, Recharts, Cytoscape.js |
-| Backend | Python, FastAPI |
+| API | Python, FastAPI |
 | Data | PostgreSQL, SQLite, pandas, NumPy |
-| Machine learning | PyTorch, PyTorch Geometric, scikit-learn |
-| Deployment | Vercel (frontend), Render (API) |
+| Machine Learning | PyTorch, PyTorch Geometric, scikit-learn |
+| Deployment | Vercel, Render |
 
-## Dataset coverage
+## Architecture
 
-AMLNet uses synthetic AMLSim-derived datasets. The source dataset size and the smaller interactive investigation index are **different scopes**.
+```mermaid
+flowchart LR
+    UI["React + Vite<br/>Investigations & graphs"] --> API["FastAPI<br/>Application API"]
+    API --> PG["PostgreSQL<br/>Operational records"]
+    API --> IDX["SQLite<br/>Indexed investigations"]
+    API --> INF["ML & GNN<br/>Risk scoring"]
+    PIPE["Offline processing<br/>Training & evaluation"] --> HUB["Model registries<br/>Hugging Face & Kaggle"]
+```
 
-| Tier | Source accounts | Source transactions |
+## Datasets
+
+AMLNet supports five synthetic benchmark tiers. The selected **source dataset** and the smaller **interactive investigation index** are distinct.
+
+| Tier | Source Accounts | Source Transactions |
 | --- | ---: | ---: |
 | 100 | 100 | 17,144 |
 | 1K | 1,000 | 117,533 |
 | 10K | 10,000 | 1,323,234 |
 | **100K (default)** | **100,000** | **12,476,012** |
 | 1M | 1,000,000 | 124,703,184 |
-| **Total across tiers** | **1,111,100** | **138,637,107** |
+| **Total** | **1,111,100** | **138,637,107** |
 
-The 100K tier's **interactive investigation index** contains 25,000 accounts and approximately 35,000 retained transaction edges; those are **not** the full source dataset counts.
+For the default 100K tier, the interactive index contains **25,000 accounts and 35,000 retained transaction edges**. Source transactions were streamed for feature aggregation; GNN training uses sampled graph edges rather than every source edge. See the [benchmark manifest](backend/research/published_benchmark_manifest.json) for model-specific results and coverage.
 
-The data-processing pipeline reports scanning and aggregating all source transactions into account features. The GNN training topology uses label-independent sampled edges, so **full-source feature processing does not mean every source edge was used for graph training**. Evaluation results, model coverage and experiment metadata are recorded in [the benchmark manifest](backend/research/published_benchmark_manifest.json).
+## Models
 
-## Model artifacts
+**30 model configurations:** Six architectures across five dataset tiers.
 
-The project maintains **30 model configurations** (six architectures × five dataset tiers):
+| Model Family | Architectures | Registry |
+| --- | --- | --- |
+| Graph Neural Networks | GCN, GraphSAGE, GAT | [Kaggle — PyTorch](https://www.kaggle.com/models/aniketagarwal10aa/amlnet/PyTorch/gnn-architectures) |
+| Classical ML | Logistic Regression, Random Forest, HistGradientBoosting | [Kaggle — Scikit-learn](https://www.kaggle.com/models/aniketagarwal10aa/amlnet/ScikitLearn/tabular-baselines) |
 
-- [Hugging Face model repository](https://huggingface.co/AniketAgarwal-aa/AMLNet-Research)
-- [Kaggle model repository](https://www.kaggle.com/models/aniketagarwal10aa/amlnet) — [GNN models](https://www.kaggle.com/models/aniketagarwal10aa/amlnet/PyTorch/gnn-architectures) · [Tabular models](https://www.kaggle.com/models/aniketagarwal10aa/amlnet/ScikitLearn/tabular-baselines)
+The model collection is also available on **[Hugging Face](https://huggingface.co/AniketAgarwal-aa/AMLNet-Research)** and **[Kaggle](https://www.kaggle.com/models/aniketagarwal10aa/amlnet)**.
 
-*Model repositories may require account authorization. Saved model artifacts and the source repository are separate downloads.*
+## Quick Start
 
-## Quick start
-
-**Requirements:** Python 3.11+, Node.js 20+ and npm. Database access and additional environment variables are needed for some application features.
+**Prerequisites:** Python 3.11+, Node.js 20+ and npm. Some features require environment configuration and database access.
 
 ```bash
 git clone https://github.com/AniketAgarwal-aa/AMLNet.git
 cd AMLNet
 ```
 
-**Backend** (first terminal):
+**Start the backend** (terminal 1):
 
 ```bash
 cd backend
@@ -83,7 +85,7 @@ python -m pip install -r requirements.txt
 uvicorn app.main:app --reload --port 8000
 ```
 
-**Frontend** (second terminal, from the repository root):
+**Start the frontend** (terminal 2, from the project root):
 
 ```bash
 cd frontend
@@ -91,37 +93,31 @@ npm ci
 npm run dev
 ```
 
-Open [http://localhost:5173](http://localhost:5173). The local API documentation is at [http://localhost:8000/docs](http://localhost:8000/docs).
+Open **[http://localhost:5173](http://localhost:5173)**. Local API documentation is available at **[http://localhost:8000/docs](http://localhost:8000/docs)**.
 
-Review [`.env.example`](.env.example) and [`.env.production.example`](.env.production.example) for configuration examples; never commit real credentials. See [deployment instructions](DEPLOYMENT.md) for hosted configuration.
+Configuration examples: [`.env.example`](.env.example) · [`.env.production.example`](.env.production.example) · [Deployment Guide](DEPLOYMENT.md).
 
-## Tests
+## Testing
 
-Run these from the **repository root**:
+Run from the repository root:
 
 ```bash
-# Backend
 cd backend
 python -m pytest -q
-cd ..
-
-# Frontend
-cd frontend
+cd ../frontend
 npm ci
 npm test
 npm run build
 ```
 
-The [GitHub Actions workflow](.github/workflows/ci.yml) also builds and tests the project. The CI badge reflects the workflow status; a passing build alone does not verify every deployed browser interaction.
+## Notes
 
-## Notes and limitations
+- Dataset accounts, transactions and labels are synthetic.
+- Large-tier interactive indexes and sampled training graphs are smaller than their source datasets.
+- Model performance on synthetic data does not establish real-world financial crime detection accuracy.
+- For technical details, see [architecture notes](docs/ARCHITECTURE.md) and the [benchmark manifest](backend/research/published_benchmark_manifest.json).
 
-- The datasets and labels are **synthetic**, not real financial customer records.
-- Browser-accessible indexed records and sampled graph edges are smaller than the underlying source datasets.
-- Risk scores and benchmark metrics should not be interpreted as validated performance on real banking systems.
-- Administrative operations require authorization; do not expose API keys or model registry tokens.
-- For architecture and methodology, see [architecture notes](docs/ARCHITECTURE.md) and the [published benchmark manifest](backend/research/published_benchmark_manifest.json).
+## License & Attribution
 
-## License
-
-Distributed under the [MIT License](LICENSE). AMLSim has its own upstream licensing and attribution; see [IBM AMLSim](https://github.com/IBM/AMLSim).
+- **AMLNet:** [MIT License](LICENSE).
+- **Dataset generator:** [IBM AMLSim](https://github.com/IBM/AMLSim) (Apache-2.0); its license applies separately.
